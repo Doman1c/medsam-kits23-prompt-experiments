@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and authentication
+.env
+*.token
+kaggle.json
+credentials.json
+service_account*.json
+
+# Raw KiTS23 data: never commit
+dataset/
+kits23/dataset/
+case_*/
+*.nii
+*.nii.gz
+
+# MedSAM / model checkpoints: too large for normal Git
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Generated 2D data: do not commit
+kits23_2d_all/
+kits23_2d_selected_100/
+slices/
+*.npz
+*.npy
+
+# Hugging Face and other download caches
+huggingface_cache/
+hf_temporary_downloads/
+.cache/
+
+# Large or disposable experiment outputs
+visualizations/
+*.zip
+*.tar
+*.tar.gz
+
+# Keep small reproducibility outputs
+!results/
+!results/**/*.csv
+!results/**/*.json
+!results/**/*.md
+!results/**/*.png

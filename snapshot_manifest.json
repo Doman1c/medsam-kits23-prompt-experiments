@@ -1,0 +1,38 @@
+{
+  "created_at": "2026-07-14T05:52:50.527670",
+  "destination": "/content/medsam_git_snapshot",
+  "copied_files": [
+    "/content/language_prompt_medsam_starter/prepare_kits23_2d.py",
+    "/content/language_prompt_medsam_starter/run_v0_experiment.py",
+    "/content/language_prompt_medsam_starter/environment_check.py",
+    "/content/language_prompt_medsam_starter/requirements.txt",
+    "/content/language_prompt_medsam_starter/.gitignore",
+    "/content/language_prompt_medsam_starter/README.md",
+    "/content/kits23_selected_100_cases.json",
+    "/content/medsam_environment_report.json",
+    "/content/v0_kidney_random_100/selected_samples.csv",
+    "/content/v0_kidney_random_100/per_sample_results.csv",
+    "/content/v0_kidney_random_100/summary.csv",
+    "/content/v0_kidney_random_100/visualizations/case_00054_z0176_kidney.png",
+    "/content/v0_kidney_random_100/visualizations/case_00147_z0350_kidney.png",
+    "/content/v0_kidney_random_100/visualizations/case_00492_z0179_kidney.png",
+    "/content/v0_kidney_random_100/visualizations/case_00517_z0140_kidney.png",
+    "/content/v0_kidney_random_100/visualizations/case_00550_z0174_kidney.png",
+    "/content/v0_kidney_one_per_case/selected_samples.csv",
+    "/content/v0_kidney_one_per_case/per_sample_results.csv",
+    "/content/v0_kidney_one_per_case/summary.csv",
+    "/content/v0_kidney_one_per_case/visualizations/case_00000_z0176_kidney.png",
+    "/content/v0_kidney_one_per_case/visualizations/case_00001_z0126_kidney.png",
+    "/content/v0_kidney_one_per_case/visualizations/case_00002_z0169_kidney.png",
+    "/content/v0_kidney_one_per_case/visualizations/case_00003_z0339_kidney.png",
+    "/content/v0_kidney_one_per_case/visualizations/case_00004_z0344_kidney.png",
+    "generated:pip_freeze.txt"
+  ],
+  "missing_files": [],
+  "excluded": [
+    "KiTS23 raw NIfTI volumes",
+    "processed NPZ slices",
+    "MedSAM checkpoint",
+    "Hugging Face caches"
+  ]
+}

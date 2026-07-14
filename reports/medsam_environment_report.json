@@ -1,0 +1,362 @@
+{
+  "generated_at_utc": "2026-07-14T05:52:12.640531+00:00",
+  "system": {
+    "python_version": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+    "python_executable": "/usr/bin/python3",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "working_directory": "/content/MedSAM"
+  },
+  "packages": {
+    "numpy": {
+      "ok": true,
+      "version": "2.0.2"
+    },
+    "pandas": {
+      "ok": true,
+      "version": "2.2.2"
+    },
+    "nibabel": {
+      "ok": true,
+      "version": "5.4.2"
+    },
+    "scipy": {
+      "ok": true,
+      "version": "1.16.3"
+    },
+    "matplotlib": {
+      "ok": true,
+      "version": "3.10.0"
+    },
+    "tqdm": {
+      "ok": true,
+      "version": "4.67.3"
+    },
+    "torch": {
+      "ok": true,
+      "version": "2.11.0+cu128"
+    },
+    "segment_anything": {
+      "ok": true,
+      "version": "installed"
+    }
+  },
+  "cuda": {
+    "torch_imported": true,
+    "cuda_available": true,
+    "torch_version": "2.11.0+cu128",
+    "cuda_device_count": 1,
+    "cuda_device_name": "Tesla T4",
+    "cuda_version": "12.8"
+  },
+  "git": {
+    "git_available": true,
+    "is_repository": false,
+    "git_version": "git version 2.34.1"
+  },
+  "project_scripts": {
+    "path": "/content/language_prompt_medsam_starter",
+    "exists": true,
+    "scripts": {
+      "prepare_kits23_2d.py": {
+        "path": "/content/language_prompt_medsam_starter/prepare_kits23_2d.py",
+        "exists": true,
+        "size": 7787,
+        "size_human": "7.60 KiB",
+        "syntax_ok": true
+      },
+      "run_v0_experiment.py": {
+        "path": "/content/language_prompt_medsam_starter/run_v0_experiment.py",
+        "exists": true,
+        "size": 19754,
+        "size_human": "19.29 KiB",
+        "syntax_ok": true
+      }
+    }
+  },
+  "checkpoint": {
+    "path": "/content/MedSAM/work_dir/MedSAM/medsam_vit_b.pth",
+    "exists": true,
+    "size": 375049145,
+    "size_human": "357.67 MiB",
+    "looks_large_enough": true
+  },
+  "dataset": {
+    "path": "/content/kits23/dataset",
+    "exists": true,
+    "complete_case_count": 147,
+    "incomplete_case_count": 342,
+    "incomplete_cases": [
+      {
+        "case_id": "case_00014",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00018",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00031",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00032",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00044",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00058",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00063",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00068",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00069",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00070",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00071",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00073",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00074",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00075",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00076",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00077",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00078",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00079",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00080",
+        "has_imaging": false,
+        "has_segmentation": true
+      },
+      {
+        "case_id": "case_00081",
+        "has_imaging": false,
+        "has_segmentation": true
+      }
+    ],
+    "first_complete_case": "case_00000",
+    "sample_case": {
+      "case_id": "case_00000",
+      "image_shape": [
+        611,
+        512,
+        512
+      ],
+      "segmentation_shape": [
+        611,
+        512,
+        512
+      ],
+      "shapes_match": true,
+      "image_dtype": "float64",
+      "segmentation_dtype": "uint8",
+      "voxel_spacing": [
+        0.5,
+        0.919921875,
+        0.919921875
+      ],
+      "labels": {
+        "0": {
+          "name": "background",
+          "voxel_count": 159295039
+        },
+        "1": {
+          "name": "kidney",
+          "voxel_count": 854483
+        },
+        "2": {
+          "name": "tumor",
+          "voxel_count": 20462
+        }
+      }
+    }
+  },
+  "processed_data": {
+    "path": "/content/kits23_2d_all",
+    "exists": true,
+    "index_exists": true,
+    "slices_directory_exists": true,
+    "index_rows": 38873,
+    "columns": [
+      "case_id",
+      "slice_index",
+      "npz_path",
+      "target_id",
+      "target_name",
+      "target_pixels",
+      "image_height",
+      "image_width"
+    ],
+    "indexed_case_count": 147,
+    "rows_by_target": {
+      "cyst": 1973,
+      "kidney": 27511,
+      "tumor": 9389
+    },
+    "npz_paths_checked": 100,
+    "missing_npz_count": 0,
+    "missing_npz_examples": [],
+    "full_npz_scan": false,
+    "sample_npz": {
+      "path": "/content/kits23_2d_all/slices/case_00000_z0139.npz",
+      "keys": [
+        "image",
+        "label"
+      ],
+      "image_shape": [
+        611,
+        512
+      ],
+      "image_dtype": "float32",
+      "image_min": 0.0,
+      "image_max": 1.0,
+      "label_shape": [
+        611,
+        512
+      ],
+      "label_dtype": "uint8",
+      "label_values": [
+        0,
+        1
+      ]
+    }
+  },
+  "selected_case_list": {
+    "path": "/content/kits23_selected_100_cases.json",
+    "exists": true,
+    "keys": [
+      "random_seed",
+      "number_of_cases",
+      "case_numbers",
+      "case_ids"
+    ],
+    "case_id_count": 100,
+    "first_case_ids": [
+      "case_00001",
+      "case_00005",
+      "case_00012",
+      "case_00025",
+      "case_00039",
+      "case_00041",
+      "case_00045",
+      "case_00046",
+      "case_00050",
+      "case_00052"
+    ],
+    "random_seed": 2026
+  },
+  "results": {
+    "random": {
+      "path": "/content/v0_kidney_random_100",
+      "exists": true,
+      "files": {
+        "selected_samples.csv": true,
+        "per_sample_results.csv": true,
+        "summary.csv": true
+      },
+      "result_rows": 500,
+      "evaluated_cases": 73,
+      "evaluated_samples": 100,
+      "mean_dice_by_mode": {
+        "box_mask": 0.901517824660742,
+        "box": 0.8902351261898097,
+        "all": 0.8812124671683964,
+        "box_pos": 0.8041512376741643,
+        "box_pos_neg": 0.6723265838267135
+      },
+      "visualization_count": 5
+    },
+    "one_per_case": {
+      "path": "/content/v0_kidney_one_per_case",
+      "exists": true,
+      "files": {
+        "selected_samples.csv": true,
+        "per_sample_results.csv": true,
+        "summary.csv": true
+      },
+      "result_rows": 294,
+      "evaluated_cases": 147,
+      "evaluated_samples": 147,
+      "mean_dice_by_mode": {
+        "box_mask": 0.9539760739558495,
+        "box": 0.941501207601897
+      },
+      "visualization_count": 5
+    }
+  },
+  "directory_sizes": {
+    "project_root": {
+      "path": "/content/language_prompt_medsam_starter",
+      "size_bytes": 101682,
+      "size_human": "99.30 KiB"
+    },
+    "processed_root": {
+      "path": "/content/kits23_2d_all",
+      "size_bytes": 2539270216,
+      "size_human": "2.36 GiB"
+    },
+    "random_result": {
+      "path": "/content/v0_kidney_random_100",
+      "size_bytes": 711410,
+      "size_human": "694.74 KiB"
+    },
+    "one_per_case_result": {
+      "path": "/content/v0_kidney_one_per_case",
+      "size_bytes": 977050,
+      "size_human": "954.15 KiB"
+    }
+  }
+}
