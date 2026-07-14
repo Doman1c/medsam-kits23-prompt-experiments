@@ -1,0 +1,19 @@
+{
+  "evaluations": 28200,
+  "cases": 120,
+  "slice_target_samples": 600,
+  "mean_oracle_dice": 0.8512861523069446,
+  "failure_definitions": {
+    "raw_failure": "dice < 0.8",
+    "prompt_induced_failure": "oracle_dice >= 0.8 and dice < 0.8",
+    "relative_failure": "dice_retention < 0.9",
+    "severe_drop": "delta_dice <= -0.1"
+  },
+  "spearman_with_dice": {
+    "box_iou": 0.5038010079884498,
+    "target_coverage": 0.24652631846670203,
+    "box_area_ratio": 0.08979011752519467,
+    "abs_log_area_ratio": -0.10429793209447155,
+    "center_error_norm": -0.26235566367446805
+  }
+}

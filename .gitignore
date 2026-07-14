@@ -60,3 +60,6 @@ visualizations/
 !results/**/*.json
 !results/**/*.md
 !results/**/*.png
+data/
+datasets/
+checkpoints/
