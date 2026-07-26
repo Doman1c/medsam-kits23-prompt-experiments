@@ -1,0 +1,38 @@
+{
+  "manifest": "/content/v1a1_work/manifest/v1a1_dual_manifest.csv",
+  "total_cases": 147,
+  "total_slices": 28874,
+  "split_summary": {
+    "test": {
+      "cases": 27,
+      "slices": 4277,
+      "positive_slices": 1473,
+      "left_positive_sides": 1344,
+      "right_positive_sides": 1015
+    },
+    "train": {
+      "cases": 100,
+      "slices": 20953,
+      "positive_slices": 7440,
+      "left_positive_sides": 6374,
+      "right_positive_sides": 5985
+    },
+    "val": {
+      "cases": 20,
+      "slices": 3644,
+      "positive_slices": 1253,
+      "left_positive_sides": 1173,
+      "right_positive_sides": 977
+    }
+  },
+  "case_level_leakage_check": true,
+  "left_crossings": 0,
+  "right_crossings": 0,
+  "cases_with_large_left_jumps": 4,
+  "cases_with_large_right_jumps": 0,
+  "target_labels": [
+    1
+  ],
+  "canonical_orientation": "RAS",
+  "anatomical_side_rule": "low x = left kidney; high x = right kidney"
+}

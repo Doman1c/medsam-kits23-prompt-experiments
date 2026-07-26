@@ -1,0 +1,271 @@
+{
+  "calibration": {
+    "variant": "smooth",
+    "max_gap": 0,
+    "left_threshold": 0.2,
+    "right_threshold": 0.3
+  },
+  "scale_summaries": [
+    {
+      "variant": "smooth",
+      "expansion_scale": 1.1,
+      "overall": {
+        "n": 1253,
+        "dice_mean": 0.8049000837442215,
+        "dice_median": 0.9240707286363388,
+        "iou_mean": 0.7368916723909241
+      },
+      "case_level_dice_mean": 0.8164751965437451,
+      "by_combined_area_bin": {
+        "00_10": {
+          "n": 184,
+          "dice_mean": 0.28233007610667565,
+          "dice_median": 0.03315102853522615,
+          "iou_mean": 0.22424252415221507
+        },
+        "10_50": {
+          "n": 356,
+          "dice_mean": 0.86429945013189,
+          "dice_median": 0.9258262821807042,
+          "iou_mean": 0.7869054860056358
+        },
+        "50_90": {
+          "n": 486,
+          "dice_mean": 0.905121344846226,
+          "dice_median": 0.9418848036558619,
+          "iou_mean": 0.8381397003618849
+        },
+        "90_100": {
+          "n": 227,
+          "dice_mean": 0.9207554761482932,
+          "dice_median": 0.940734887396286,
+          "iou_mean": 0.8572264038235146
+        }
+      },
+      "oracle_tight_overall": {
+        "n": 1253,
+        "dice_mean": 0.8461758850901687,
+        "dice_median": 0.9276578737010392,
+        "iou_mean": 0.7773528335667862
+      },
+      "oracle_scaled_overall": {
+        "n": 1253,
+        "dice_mean": 0.8676539571932709,
+        "dice_median": 0.9465979940363242,
+        "iou_mean": 0.8104458010532966
+      },
+      "oracle_scaled_case_level_dice_mean": 0.8888309820156881,
+      "oracle_gap_overall": 0.06275387344904937,
+      "oracle_gap_case_level": 0.07235578547194299
+    },
+    {
+      "variant": "smooth",
+      "expansion_scale": 1.15,
+      "overall": {
+        "n": 1253,
+        "dice_mean": 0.8103431867270804,
+        "dice_median": 0.9343326195574588,
+        "iou_mean": 0.7461503505614743
+      },
+      "case_level_dice_mean": 0.8217882640322897,
+      "by_combined_area_bin": {
+        "00_10": {
+          "n": 184,
+          "dice_mean": 0.2799696544141569,
+          "dice_median": 0.04115839317633035,
+          "iou_mean": 0.2219175123765026
+        },
+        "10_50": {
+          "n": 356,
+          "dice_mean": 0.8687343812991274,
+          "dice_median": 0.9321757246166751,
+          "iou_mean": 0.7943382775307136
+        },
+        "50_90": {
+          "n": 486,
+          "dice_mean": 0.9126639802492288,
+          "dice_median": 0.9491328494844036,
+          "iou_mean": 0.8503834157519065
+        },
+        "90_100": {
+          "n": 227,
+          "dice_mean": 0.9296099665780281,
+          "dice_median": 0.947520636259565,
+          "iou_mean": 0.8723471370920273
+        }
+      },
+      "oracle_tight_overall": {
+        "n": 1253,
+        "dice_mean": 0.8461758850901687,
+        "dice_median": 0.9276578737010392,
+        "iou_mean": 0.7773528335667862
+      },
+      "oracle_scaled_overall": {
+        "n": 1253,
+        "dice_mean": 0.8699474326001626,
+        "dice_median": 0.9476813317479192,
+        "iou_mean": 0.8139496473047032
+      },
+      "oracle_scaled_case_level_dice_mean": 0.8910753528774945,
+      "oracle_gap_overall": 0.05960424587308222,
+      "oracle_gap_case_level": 0.06928708884520485
+    },
+    {
+      "variant": "smooth",
+      "expansion_scale": 1.2,
+      "overall": {
+        "n": 1253,
+        "dice_mean": 0.8121645598790859,
+        "dice_median": 0.9384037015615962,
+        "iou_mean": 0.7494935065390401
+      },
+      "case_level_dice_mean": 0.8232787554363895,
+      "by_combined_area_bin": {
+        "00_10": {
+          "n": 184,
+          "dice_mean": 0.2771951939061565,
+          "dice_median": 0.048379226950655496,
+          "iou_mean": 0.21942175295781804
+        },
+        "10_50": {
+          "n": 356,
+          "dice_mean": 0.869682157880567,
+          "dice_median": 0.9358990868828145,
+          "iou_mean": 0.7964333701694951
+        },
+        "50_90": {
+          "n": 486,
+          "dice_mean": 0.9156294379106216,
+          "dice_median": 0.950898434246263,
+          "iou_mean": 0.8548015854985861
+        },
+        "90_100": {
+          "n": 227,
+          "dice_mean": 0.9340771930384042,
+          "dice_median": 0.9546995913398836,
+          "iou_mean": 0.880078902275444
+        }
+      },
+      "oracle_tight_overall": {
+        "n": 1253,
+        "dice_mean": 0.8461758850901687,
+        "dice_median": 0.9276578737010392,
+        "iou_mean": 0.7773528335667862
+      },
+      "oracle_scaled_overall": {
+        "n": 1253,
+        "dice_mean": 0.8708497242629176,
+        "dice_median": 0.9487202196439642,
+        "iou_mean": 0.8152781920849752
+      },
+      "oracle_scaled_case_level_dice_mean": 0.8915449190332128,
+      "oracle_gap_overall": 0.058685164383831756,
+      "oracle_gap_case_level": 0.06826616359682325
+    },
+    {
+      "variant": "smooth",
+      "expansion_scale": 1.25,
+      "overall": {
+        "n": 1253,
+        "dice_mean": 0.8119387313435352,
+        "dice_median": 0.9406024607551972,
+        "iou_mean": 0.7497002303519572
+      },
+      "case_level_dice_mean": 0.8219621182112367,
+      "by_combined_area_bin": {
+        "00_10": {
+          "n": 184,
+          "dice_mean": 0.274518491306496,
+          "dice_median": 0.0541028495772274,
+          "iou_mean": 0.21696572070601267
+        },
+        "10_50": {
+          "n": 356,
+          "dice_mean": 0.8689427808190718,
+          "dice_median": 0.9400583898239053,
+          "iou_mean": 0.7961706543931618
+        },
+        "50_90": {
+          "n": 486,
+          "dice_mean": 0.9161416711783245,
+          "dice_median": 0.9519354828882169,
+          "iou_mean": 0.8557087114126158
+        },
+        "90_100": {
+          "n": 227,
+          "dice_mean": 0.935063197395591,
+          "dice_median": 0.955324982527821,
+          "iou_mean": 0.8816806577559432
+        }
+      },
+      "oracle_tight_overall": {
+        "n": 1253,
+        "dice_mean": 0.8461758850901687,
+        "dice_median": 0.9276578737010392,
+        "iou_mean": 0.7773528335667862
+      },
+      "oracle_scaled_overall": {
+        "n": 1253,
+        "dice_mean": 0.8711994836097713,
+        "dice_median": 0.9493942646833308,
+        "iou_mean": 0.8156653735212646
+      },
+      "oracle_scaled_case_level_dice_mean": 0.8914290250563319,
+      "oracle_gap_overall": 0.05926075226623606,
+      "oracle_gap_case_level": 0.06946690684509527
+    }
+  ],
+  "recommended_by_validation_medsam": {
+    "variant": "smooth",
+    "expansion_scale": 1.2,
+    "overall": {
+      "n": 1253,
+      "dice_mean": 0.8121645598790859,
+      "dice_median": 0.9384037015615962,
+      "iou_mean": 0.7494935065390401
+    },
+    "case_level_dice_mean": 0.8232787554363895,
+    "by_combined_area_bin": {
+      "00_10": {
+        "n": 184,
+        "dice_mean": 0.2771951939061565,
+        "dice_median": 0.048379226950655496,
+        "iou_mean": 0.21942175295781804
+      },
+      "10_50": {
+        "n": 356,
+        "dice_mean": 0.869682157880567,
+        "dice_median": 0.9358990868828145,
+        "iou_mean": 0.7964333701694951
+      },
+      "50_90": {
+        "n": 486,
+        "dice_mean": 0.9156294379106216,
+        "dice_median": 0.950898434246263,
+        "iou_mean": 0.8548015854985861
+      },
+      "90_100": {
+        "n": 227,
+        "dice_mean": 0.9340771930384042,
+        "dice_median": 0.9546995913398836,
+        "iou_mean": 0.880078902275444
+      }
+    },
+    "oracle_tight_overall": {
+      "n": 1253,
+      "dice_mean": 0.8461758850901687,
+      "dice_median": 0.9276578737010392,
+      "iou_mean": 0.7773528335667862
+    },
+    "oracle_scaled_overall": {
+      "n": 1253,
+      "dice_mean": 0.8708497242629176,
+      "dice_median": 0.9487202196439642,
+      "iou_mean": 0.8152781920849752
+    },
+    "oracle_scaled_case_level_dice_mean": 0.8915449190332128,
+    "oracle_gap_overall": 0.058685164383831756,
+    "oracle_gap_case_level": 0.06826616359682325
+  },
+  "selection_rule": "Maximize case-level mean Dice, break ties with slice-level mean Dice."
+}

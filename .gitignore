@@ -63,3 +63,35 @@ visualizations/
 data/
 datasets/
 checkpoints/
+
+# KiTS23 raw and processed data
+*.nii
+*.nii.gz
+*.npz
+*.tar
+*.tar.gz
+data/
+processed/
+cache/
+
+# Model weights and checkpoints
+*.pth
+*.ckpt
+*.pt
+checkpoints/
+weights/
+
+# Large prediction details
+medsam_validation_details.csv
+*_base_predictions.csv
+recommended_predictions.csv
+
+# Python and notebook caches
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Colab runtime outputs
+v1a1_work/
+runs/
+wandb/
