@@ -1,0 +1,206 @@
+{
+  "status": "validation_only_center_versus_size_decomposition",
+  "development_split": "validation",
+  "test_set_used": false,
+  "all_modes_use_ground_truth_presence": true,
+  "modes": {
+    "M0": "ground-truth presence + automatic smooth center + automatic smooth size",
+    "M1": "ground-truth presence + oracle center + automatic smooth size",
+    "M2": "ground-truth presence + automatic smooth center + oracle size",
+    "M3": "ground-truth presence + oracle center + oracle size"
+  },
+  "locked_configuration": {
+    "candidate": "epoch6",
+    "variant": "smooth",
+    "max_gap": 0,
+    "left_threshold": 0.2,
+    "right_threshold": 0.3,
+    "expansion_scale": 1.2,
+    "target_labels": [1]
+  },
+  "data": {
+    "validation_cases": 20,
+    "validation_positive_slices": 1253,
+    "result_rows": 5012
+  },
+  "mode_metrics": {
+    "auto_center_auto_size": {
+      "n_slices": 1253,
+      "dice_mean": 0.8361421833363649,
+      "dice_median": 0.9436485195797517,
+      "iou_mean": 0.7783724673333918
+    },
+    "oracle_center_auto_size": {
+      "n_slices": 1253,
+      "dice_mean": 0.8510396550816621,
+      "dice_median": 0.9461262185736276,
+      "iou_mean": 0.7924061141459481
+    },
+    "auto_center_oracle_size": {
+      "n_slices": 1253,
+      "dice_mean": 0.8457146564829583,
+      "dice_median": 0.9479183411027166,
+      "iou_mean": 0.7915752653634609
+    },
+    "oracle_center_oracle_size": {
+      "n_slices": 1253,
+      "dice_mean": 0.8708497242629178,
+      "dice_median": 0.9487202196439642,
+      "iou_mean": 0.8152781920849752
+    }
+  },
+  "overall_decomposition": {
+    "n_slices": 1253,
+    "M0_auto_center_auto_size_mean": 0.8361421833363649,
+    "M0_auto_center_auto_size_median": 0.9436485195797517,
+    "M1_oracle_center_auto_size_mean": 0.8510396550816621,
+    "M1_oracle_center_auto_size_median": 0.9461262185736276,
+    "M2_auto_center_oracle_size_mean": 0.8457146564829583,
+    "M2_auto_center_oracle_size_median": 0.9479183411027166,
+    "M3_oracle_center_oracle_size_mean": 0.8708497242629178,
+    "M3_oracle_center_oracle_size_median": 0.9487202196439642,
+    "oracle_center_gain_mean_M1_minus_M0": 0.014897471745297288,
+    "oracle_size_gain_mean_M2_minus_M0": 0.009572473146593406,
+    "joint_oracle_box_gain_mean_M3_minus_M0": 0.03470754092655295,
+    "remaining_size_gap_mean_M3_minus_M1": 0.019810069181255663,
+    "remaining_center_gap_mean_M3_minus_M2": 0.02513506777995954,
+    "center_size_interaction_mean": 0.010237596034662256,
+    "signed_center_gain_fraction_of_joint_gap": 0.429228673296759,
+    "signed_size_gain_fraction_of_joint_gap": 0.2758038423652769,
+    "positive_joint_gap_sum": 48.94153533262504,
+    "capped_positive_center_recovery_fraction": 0.44607830209656046,
+    "capped_positive_size_recovery_fraction": 0.3976985320788265,
+    "oracle_center_improves_rate": 0.5921787709497207,
+    "oracle_center_worsens_rate": 0.3567438148443735,
+    "oracle_size_improves_rate": 0.5275339185953711,
+    "oracle_size_worsens_rate": 0.39824421388667197,
+    "interpretation_note": "Center and size effects are not assumed additive. The interaction term is M3 - M2 - M1 + M0."
+  },
+  "by_area": [
+    {
+      "combined_area_bin": "00_10",
+      "n_slices": 184,
+      "M0_auto_center_auto_size_mean": 0.36939054892324286,
+      "M1_oracle_center_auto_size_mean": 0.4298014072922959,
+      "M2_auto_center_oracle_size_mean": 0.395797883246566,
+      "M3_oracle_center_oracle_size_mean": 0.49867581505203484,
+      "oracle_center_gain_mean_M1_minus_M0": 0.060410858369053064,
+      "oracle_size_gain_mean_M2_minus_M0": 0.026407334323323185,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.12928526612879201,
+      "center_size_interaction_mean": 0.04246707343641578
+    },
+    {
+      "combined_area_bin": "10_50",
+      "n_slices": 356,
+      "M0_auto_center_auto_size_mean": 0.905823755127893,
+      "M1_oracle_center_auto_size_mean": 0.9174330260243537,
+      "M2_auto_center_oracle_size_mean": 0.924838172440205,
+      "M3_oracle_center_oracle_size_mean": 0.9372089279939222,
+      "oracle_center_gain_mean_M1_minus_M0": 0.011609270896460817,
+      "oracle_size_gain_mean_M2_minus_M0": 0.01901441731231203,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.031385172866029244,
+      "center_size_interaction_mean": 0.0007614846572563959
+    },
+    {
+      "combined_area_bin": "50_90",
+      "n_slices": 486,
+      "M0_auto_center_auto_size_mean": 0.9160689610562568,
+      "M1_oracle_center_auto_size_mean": 0.9241810001344155,
+      "M2_auto_center_oracle_size_mean": 0.9170564952296361,
+      "M3_oracle_center_oracle_size_mean": 0.9335401720086579,
+      "oracle_center_gain_mean_M1_minus_M0": 0.008112039078158847,
+      "oracle_size_gain_mean_M2_minus_M0": 0.0009875341733792474,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.01747121095240108,
+      "center_size_interaction_mean": 0.008371637700862983
+    },
+    {
+      "combined_area_bin": "90_100",
+      "n_slices": 227,
+      "M0_auto_center_auto_size_mean": 0.9340771930384042,
+      "M1_oracle_center_auto_size_mean": 0.9317669847821333,
+      "M2_auto_center_oracle_size_mean": 0.9335762466319932,
+      "M3_oracle_center_oracle_size_mean": 0.934235473875848,
+      "oracle_center_gain_mean_M1_minus_M0": -0.002310208256270988,
+      "oracle_size_gain_mean_M2_minus_M0": -0.0005009464064111337,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.00015828083744393907,
+      "center_size_interaction_mean": 0.0029694355001260615
+    }
+  ],
+  "top_joint_gap_cases": [
+    {
+      "case_id": "case_00431",
+      "n_slices": 25,
+      "M0_auto_center_auto_size_mean": 0.778321929570709,
+      "M1_oracle_center_auto_size_mean": 0.8999591050059321,
+      "M2_auto_center_oracle_size_mean": 0.8208560819777098,
+      "M3_oracle_center_oracle_size_mean": 0.931706021771691,
+      "oracle_center_gain_mean_M1_minus_M0": 0.12163717543522314,
+      "oracle_size_gain_mean_M2_minus_M0": 0.04253415240700091,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.15338409220098215,
+      "center_size_interaction_mean": -0.010787235641241878
+    },
+    {
+      "case_id": "case_00107",
+      "n_slices": 27,
+      "M0_auto_center_auto_size_mean": 0.6339656802667688,
+      "M1_oracle_center_auto_size_mean": 0.6750063402849116,
+      "M2_auto_center_oracle_size_mean": 0.6240604402852002,
+      "M3_oracle_center_oracle_size_mean": 0.786888437834286,
+      "oracle_center_gain_mean_M1_minus_M0": 0.04104066001814286,
+      "oracle_size_gain_mean_M2_minus_M0": -0.009905239981568456,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.15292275756751722,
+      "center_size_interaction_mean": 0.12178733753094281
+    },
+    {
+      "case_id": "case_00067",
+      "n_slices": 170,
+      "M0_auto_center_auto_size_mean": 0.47192317420496555,
+      "M1_oracle_center_auto_size_mean": 0.5086373097988984,
+      "M2_auto_center_oracle_size_mean": 0.5158625610568733,
+      "M3_oracle_center_oracle_size_mean": 0.5745845292144656,
+      "oracle_center_gain_mean_M1_minus_M0": 0.03671413559393289,
+      "oracle_size_gain_mean_M2_minus_M0": 0.04393938685190776,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.1026613550095001,
+      "center_size_interaction_mean": 0.02200783256365947
+    },
+    {
+      "case_id": "case_00418",
+      "n_slices": 31,
+      "M0_auto_center_auto_size_mean": 0.7283945459720406,
+      "M1_oracle_center_auto_size_mean": 0.7454139323553061,
+      "M2_auto_center_oracle_size_mean": 0.7260198246456419,
+      "M3_oracle_center_oracle_size_mean": 0.804441994574084,
+      "oracle_center_gain_mean_M1_minus_M0": 0.017019386383265677,
+      "oracle_size_gain_mean_M2_minus_M0": -0.002374721326398783,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.07604744860204339,
+      "center_size_interaction_mean": 0.06140278354517647
+    },
+    {
+      "case_id": "case_00064",
+      "n_slices": 21,
+      "M0_auto_center_auto_size_mean": 0.8746533442936388,
+      "M1_oracle_center_auto_size_mean": 0.8820153195543889,
+      "M2_auto_center_oracle_size_mean": 0.912137481510673,
+      "M3_oracle_center_oracle_size_mean": 0.9264720799997237,
+      "oracle_center_gain_mean_M1_minus_M0": 0.00736197526075019,
+      "oracle_size_gain_mean_M2_minus_M0": 0.03748413721703417,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.05181873570608476,
+      "center_size_interaction_mean": 0.006972623228300392
+    }
+  ],
+  "runtime": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "elapsed_seconds": 51.36819243431091,
+    "peak_cuda_memory_mib": 1591.21142578125
+  },
+  "artifact_sha256": {
+    "manifest": "5a8163749f74bfe64a0dcbc3171ded6edcdab455a184088699992c8e9b677a0c",
+    "predictions": "9f34cc416679ca2c1cf28aee27e5af0ef8ecbdb0e6eef2093b7459b4cf7a9aee",
+    "calibration_json": "e3848927fc7518e746f9969e9b0456211967af90e5d459ba646446f40ad23358",
+    "medsam_checkpoint": "34b34b78c1d18cb8c6bf84cf9c00e135d6d6c965699f3c0e31ef1bc9dcb5be74",
+    "details": "996e2baadf66cb6a47966d2acdcb47fc63d3077ed027024cb00fd4925b0bd77b",
+    "per_slice": "f20f68bfef80c8f7f553895cbb14d98b9af3e2c4d7080386ad843649bad2cc68"
+  },
+  "research_guardrail": "This experiment uses validation only. Interpret center and size replacement gains to define V1a.2, but do not revisit the frozen test set during model or hyperparameter selection."
+}
