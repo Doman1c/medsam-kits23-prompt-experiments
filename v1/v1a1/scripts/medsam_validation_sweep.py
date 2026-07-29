@@ -98,9 +98,9 @@ def aggregate(frame: pd.DataFrame) -> dict:
 
 
 def summarize(details: pd.DataFrame, variant: str, scale: float) -> dict:
-    subset = details[(details.mode == "calibrated") & (details.expansion_scale == scale)]
-    oracle_tight = details[details.mode == "oracle_tight"]
-    oracle_scaled = details[(details.mode == "oracle_scaled") & (details.expansion_scale == scale)]
+    subset = details[(details["mode"] == "calibrated") & (details["expansion_scale"] == scale)]
+    oracle_tight = details[details["mode"] == "oracle_tight"]
+    oracle_scaled = details[(details["mode"] == "oracle_scaled") & (details["expansion_scale"] == scale)]
     by_area = {
         area_bin: aggregate(subset[subset.combined_area_bin == area_bin])
         for area_bin in ("00_10", "10_50", "50_90", "90_100")
