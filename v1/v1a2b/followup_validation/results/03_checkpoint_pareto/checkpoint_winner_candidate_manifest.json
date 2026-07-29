@@ -1,0 +1,28 @@
+{
+  "candidates": [
+    {
+      "name": "epoch_004",
+      "predictions": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_004/final/recommended_predictions.csv",
+      "calibration_json": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_004/final/recommended_calibration.json",
+      "expansion_scale": 1.25
+    },
+    {
+      "name": "epoch_005",
+      "predictions": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_005/final/recommended_predictions.csv",
+      "calibration_json": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_005/final/recommended_calibration.json",
+      "expansion_scale": 1.25
+    },
+    {
+      "name": "epoch_011",
+      "predictions": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_011/final/recommended_predictions.csv",
+      "calibration_json": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_011/final/recommended_calibration.json",
+      "expansion_scale": 1.15
+    },
+    {
+      "name": "epoch_014",
+      "predictions": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_014/final/recommended_predictions.csv",
+      "calibration_json": "/content/v1a1_work/v1a2_followup_validation/03_checkpoint_pareto/epoch_014/final/recommended_calibration.json",
+      "expansion_scale": 1.15
+    }
+  ]
+}
