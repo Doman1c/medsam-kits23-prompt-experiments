@@ -1,91 +1,142 @@
 # MedSAM Automatic Prompt Generation on KiTS23
 
-This repository contains a sequence of experiments for developing a lightweight, modular automatic spatial-prompt generator for frozen MedSAM on the KiTS23 kidney CT dataset.
+This repository studies a lightweight, modular, and interpretable automatic
+spatial-prompt generator for frozen MedSAM on the KiTS23 kidney CT dataset.
+The prompt model predicts bilateral kidney presence and bounding boxes from
+2.5D CT input; MedSAM itself remains frozen.
+
+```text
+2.5D CT slices
+    -> bilateral presence / center / size prediction
+    -> calibrated spatial prompts
+    -> frozen MedSAM
+    -> kidney segmentation
+```
+
+## Research objective
+
+The project asks two related questions:
+
+1. Can a compact prompt generator replace manually supplied MedSAM boxes?
+2. Which errors dominate the automatic system: presence decisions, box center,
+   box size, or center-size interaction?
+
+Development follows controlled validation-only ablations. The frozen test split
+is not used to select checkpoints, thresholds, smoothing, max-gap, expansion,
+or loss variants.
 
 ## Experiment versions
 
-| Version | Purpose | Status |
+| Version | Main question | Status |
 |---|---|---|
-| [V0](v0/) | Frozen-MedSAM prompt baseline | Complete |
-| [V0.5](v0.5/) | Bounding-box robustness analysis | Complete |
-| [V1a.1](v1/v1a1/) | Dual-kidney 2.5D automatic prompt generator | Frozen test complete |
+| [V0](v0/) | Which MedSAM prompt combinations work best? | Complete |
+| [V0.5](v0.5/) | How robust is MedSAM to box and mask degradation? | Complete |
+| [V1a.1](v1/v1a1/) | Can a 2.5D dual-kidney network generate automatic boxes? | Frozen test complete |
+| [V1a.2-A](v1/v1a2/) | Does predicted-center size supervision repair the train-inference mismatch? | Validation complete |
+| [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
+| [Follow-up validation](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
+
+## Current validation findings
+
+### Positive-slice MedSAM evaluation
+
+| Model | Slice Dice | Case Dice | Notes |
+|---|---:|---:|---|
+| V1a.1 | 0.8122 | 0.8233 | Frozen baseline |
+| V1a.2-A | 0.8096 | 0.8261 | Better geometry, no slice-Dice gain |
+| V1a.2-B epoch 4 | **0.8262** | **0.8419** | Best positive-slice operating point |
+
+### Negative-aware all-slice evaluation
+
+The follow-up evaluation contains 3,644 validation slices, including 2,390
+fully negative slices.
+
+| Operating point | All-slice Dice | Case-volume Dice | Negative specificity |
+|---|---:|---:|---:|
+| V1a.1 locked | 0.3097 | 0.7112 | 0.0464 |
+| V1a.2-A locked | 0.7666 | **0.8556** | 0.7444 |
+| V1a.2-B epoch 4 prompt-best | 0.3060 | 0.7534 | 0.0335 |
+| V1a.2-B epoch 14 calibrated | **0.7725** | 0.8508 | **0.7598** |
+
+The positive-slice V1a.2-B winner was not the best fully automatic operating
+point. Recalibrating later checkpoints changed the conclusion: epoch 14 is the
+best negative-aware V1a.2-B checkpoint, while V1a.2-A remains slightly better
+in case-volume Dice.
+
+### Fixed-scale geometry decomposition
+
+All models were compared with ground-truth presence and expansion fixed at
+`1.20`.
+
+| Model | M0 auto box | Joint box gap | Center-size interaction |
+|---|---:|---:|---:|
+| V1a.1 | 0.8361 | 0.0347 | 0.0102 |
+| V1a.2-A | 0.8406 | 0.0302 | 0.0128 |
+| V1a.2-B | **0.8416** | **0.0292** | **0.0069** |
+
+V1a.2-B is therefore the strongest geometry design. The remaining bottleneck
+is presence detection and negative-slice suppression, not additional box-loss
+complexity.
+
+## Current decision
+
+- Retain decoded-box supervision from V1a.2-B.
+- Use epoch 14 rather than epoch 4 for negative-aware V1a.2-B evaluation.
+- Keep V1a.2-A locked as the best evaluated case-volume operating point.
+- Do not freeze a final V1a.2 automatic model yet.
+- Focus the next development stage on presence calibration, negative-slice
+  suppression, and onset/offset behavior.
 
 ## Repository structure
 
 ```text
 .
-├── v0/
-│   ├── baseline scripts
-│   ├── reports
-│   ├── selected cases
-│   └── results
-├── v0.5/
-│   └── prompt_robustness/
+├── v0/                         # frozen-MedSAM prompt baselines
+├── v0.5/                       # prompt robustness experiments
 └── v1/
-    └── v1a1/
-        ├── scripts/
-        ├── v1a1/
-        ├── splits/
-        ├── docs/
-        └── results/
+    ├── v1a1/                   # frozen baseline and test analysis
+    ├── v1a2/                   # V1a.2-A predicted-center size supervision
+    └── v1a2b/                  # V1a.2-B decoded-box supervision
+        ├── scripts/            # training, prediction, and gates
+        ├── v1a2b/              # model/runtime/loss package
+        ├── docs/               # design and validation status
+        └── followup_validation/
+            ├── tools/          # negative-aware and Pareto evaluators
+            └── results/        # compact validation summaries
 ```
 
-## V1a.1 validation-locked configuration
+## Reproducibility
+
+Git contains source code, locked configurations, compact comparison tables, and
+summary documents. Large artifacts are intentionally excluded:
 
 ```text
-checkpoint      = epoch 6
-weights         = EMA
-prediction      = smooth
-max_gap         = 0
-left threshold  = 0.20
-right threshold = 0.30
-box expansion   = 1.20
+model checkpoints (*.pt, *.pth)
+MedSAM weights
+raw KiTS23 volumes
+processed NPZ slices
+large per-slice prediction tables
+full threshold-sweep tables
 ```
 
-## V1a.1 validation performance
+Those artifacts are stored outside the repository, typically in Google Drive.
+See:
 
-| Metric | Result |
-|---|---:|
-| Slice-level mean Dice | 0.8122 |
-| Slice-level median Dice | 0.9384 |
-| Case-level mean Dice | 0.8233 |
-| Overall oracle gap | 0.0587 |
-| Case-level oracle gap | 0.0683 |
+- [V1a.2-B validation status](v1/v1a2b/docs/V1A2_VALIDATION_STATUS.md)
+- [Follow-up validation protocol and results](v1/v1a2b/followup_validation/README.md)
+- [Fresh-Colab asset checklist](v1/v1a2b/docs/RESUME_FOLLOWUP_VALIDATION.md)
 
-## V1a.1 frozen test performance
+## Frozen V1a.1 test result
+
+The last frozen test evaluation remains V1a.1:
 
 | Metric | Result |
 |---|---:|
 | Test cases | 27 |
 | Positive slices | 1,473 |
 | Slice-level mean Dice | 0.7628 |
-| Slice-level median Dice | 0.9102 |
 | Case-level mean Dice | 0.7950 |
 | Oracle-scaled mean Dice | 0.8713 |
-| Mean automatic-to-oracle gap | 0.1085 |
+| Automatic-to-oracle gap | 0.1085 |
 
-## Frozen-test gap decomposition
-
-| Mode | Prompt source | Mean Dice |
-|---|---|---:|
-| A | Automatic presence + automatic box | 0.7628 |
-| B | Ground-truth presence + automatic box | 0.7881 |
-| C | Ground-truth presence + oracle box | 0.8713 |
-
-The signed mean gap was associated approximately **23.3%** with presence decisions and **76.7%** with automatic-box localization/size. The failures were strongly long-tailed: the five largest-gap cases contributed about 78% of the positive oracle gap.
-
-See [V1a.1 frozen test evaluation and error analysis](v1/v1a1/docs/FROZEN_TEST_EVALUATION_AND_ERROR_ANALYSIS.md).
-
-## Current status
-
-- Orientation audit: complete
-- Canonical RAS conversion: complete
-- Dual-kidney tracking: complete
-- Dual-channel target generation: complete
-- Small-sample overfit check: passed
-- V1a.1 training: complete
-- Validation calibration: complete
-- Locked test evaluation: complete
-- Test error analysis: complete
-- Oracle-presence / automatic-box decomposition: complete
-- Next: validation-only center-versus-size decomposition before defining V1a.2
+V1a.2-A and V1a.2-B have not been selected on the frozen test split.
