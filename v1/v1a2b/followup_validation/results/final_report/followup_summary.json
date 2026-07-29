@@ -1,0 +1,13 @@
+{
+  "status": "v1a2_followup_validation_complete",
+  "development_split": "validation",
+  "test_set_used": false,
+  "negative_aware_best_candidate": "V1a.2-A_locked",
+  "negative_aware_best_case_volume_dice": 0.8555599521790487,
+  "fixed_scale_best_geometry_model": "V1a.2-B",
+  "fixed_scale_v1a2b_M0": 0.841625724192473,
+  "fixed_scale_v1a2b_joint_box_gap": 0.0292240000704447,
+  "fixed_scale_v1a2b_interaction": 0.0069359313272985,
+  "checkpoint_pareto_winner": "epoch_014",
+  "checkpoint_pareto_case_volume_dice": 0.8507525800719609
+}
