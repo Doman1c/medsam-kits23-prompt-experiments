@@ -1,41 +1,56 @@
-# V1a.2 development status
+# V1a.2 validation status after follow-up checks
 
-This branch archives the validation-only V1a.2-A and V1a.2-B development work
-performed after the frozen V1a.1 baseline. The frozen test split was not used
-for checkpoint, threshold, smoothing, max-gap, expansion, or loss selection.
+This branch archives validation-only development after the frozen V1a.1 baseline. The frozen test split was not used for checkpoint, threshold, smoothing, max-gap, expansion, or loss selection.
 
-## V1a.2-A
+## Completed follow-up checks
 
-V1a.2-A adds inference-consistent predicted-center size-map supervision.
-Oracle-presence geometry improved, but end-to-end positive-slice MedSAM Dice
-did not improve because the selected presence operating point introduced a
-larger penalty. A feasible presence-Pareto sweep did not improve the original
-V1a.2-A configuration.
+1. Negative-aware frozen-MedSAM evaluation on all 3,644 validation slices, including 2,390 fully negative slices.
+2. Center-size decomposition at a common expansion scale of 1.20 for V1a.1, V1a.2-A, and V1a.2-B.
+3. Independent validation calibration and negative-aware checkpoint Pareto analysis for V1a.2-B epochs 4, 5, 11, and 14.
 
-## V1a.2-B
+## Negative-aware result
 
-V1a.2-B retains V1a.2-A and adds normalized decoded-corner SmoothL1
-supervision (`decoded_box_weight = 0.5`). Validation showed improved M0,
-smaller joint box gap, lower center-size interaction, and stronger positive-
-slice and small-area MedSAM Dice.
+The strongest evaluated locked automatic operating point is V1a.2-A:
 
-The selected V1a.2-B presence point has a high false-positive rate, while the
-current MedSAM selection excludes fully negative slices by default. V1a.2-B is
-therefore the leading geometry model but is not yet frozen as the final
-fully-automatic prompt generator.
+| Candidate | Positive-slice Dice | All-slice Dice | Case-volume Dice | Negative specificity |
+|---|---:|---:|---:|---:|
+| V1a.2-A locked | 0.808913 | 0.766569 | **0.855560** | 0.744351 |
+| V1a.2-B FPR-best | 0.791647 | 0.650309 | 0.823777 | 0.576151 |
+| V1a.2-B prompt-best | **0.825550** | 0.306048 | 0.753368 | 0.033473 |
+| V1a.1 locked | 0.811517 | 0.309726 | 0.711219 | 0.046444 |
 
-## Required follow-up validation
+The positive-slice winner is not the all-slice winner. V1a.2-B prompt-best obtains stronger segmentation where a kidney exists, but triggers false masks on nearly all negative slices. Presence behavior therefore dominates the complete automatic-system result.
 
-1. Negative-aware evaluation over all validation slices.
-2. Fixed-expansion (`1.20`) center-size decomposition for V1a.1, V1a.2-A,
-   and V1a.2-B.
-3. V1a.2-B checkpoint-Pareto evaluation for epochs 4, 5, 11, and 14.
+## Fixed-scale geometry result
 
-## Current validation comparison
+All models below use ground-truth presence and expansion 1.20:
 
-| model                   |   slice_dice |   case_dice |   oracle_gap |   dice_00_10 |   dice_10_50 |   dice_50_90 |   dice_90_100 |       M0 |       M1 |       M2 |       M3 |   center_gain |   size_gain |   joint_box_gap |   interaction | presence_candidate   | variant   |   max_gap |   left_threshold |   right_threshold |   expansion_scale |   delta_slice_dice_vs_V1a.1 |   delta_case_dice_vs_V1a.1 |   delta_oracle_gap_vs_V1a.1 |   delta_dice_00_10_vs_V1a.1 |   delta_dice_10_50_vs_V1a.1 |   delta_dice_50_90_vs_V1a.1 |   delta_dice_90_100_vs_V1a.1 |   delta_M0_vs_V1a.1 |   delta_center_gain_vs_V1a.1 |   delta_size_gain_vs_V1a.1 |   delta_joint_box_gap_vs_V1a.1 |   delta_interaction_vs_V1a.1 |
-|:------------------------|-------------:|------------:|-------------:|-------------:|-------------:|-------------:|--------------:|---------:|---------:|---------:|---------:|--------------:|------------:|----------------:|--------------:|:---------------------|:----------|----------:|-----------------:|------------------:|------------------:|----------------------------:|---------------------------:|----------------------------:|----------------------------:|----------------------------:|----------------------------:|-----------------------------:|--------------------:|-----------------------------:|---------------------------:|-------------------------------:|-----------------------------:|
-| V1a.1                   |     0.812165 |    0.823279 |     0.058685 |     0.277195 |     0.869682 |     0.915629 |      0.934077 | 0.836142 | 0.851040 | 0.845715 | 0.870850 |      0.014897 |    0.009572 |        0.034708 |      0.010238 | nan                  | smooth    |         0 |         0.200000 |          0.300000 |          1.200000 |                    0.000000 |                   0.000000 |                    0.000000 |                    0.000000 |                    0.000000 |                    0.000000 |                     0.000000 |            0.000000 |                     0.000000 |                   0.000000 |                       0.000000 |                     0.000000 |
-| V1a.2-A-original        |     0.809558 |    0.826144 |     0.061291 |     0.258287 |     0.867721 |     0.918424 |      0.932111 | 0.840618 | 0.853665 | 0.844976 | 0.870850 |      0.013047 |    0.004358 |        0.030232 |      0.012827 | nan                  | smooth    |         2 |         0.010000 |          0.010000 |          1.200000 |                   -0.002606 |                   0.002865 |                    0.002606 |                   -0.018908 |                   -0.001961 |                    0.002795 |                    -0.001966 |            0.004475 |                    -0.001850 |                  -0.005214 |                      -0.004475 |                     0.002589 |
-| V1a.2-A-presence-pareto |     0.809558 |    0.826144 |     0.061291 |     0.258287 |     0.867721 |     0.918424 |      0.932111 | 0.840618 | 0.853665 | 0.844976 | 0.870850 |      0.013047 |    0.004358 |        0.030232 |      0.012827 | prompt_best          | smooth    |         2 |         0.010000 |          0.010000 |          1.200000 |                   -0.002606 |                   0.002865 |                    0.002606 |                   -0.018908 |                   -0.001961 |                    0.002795 |                    -0.001966 |            0.004475 |                    -0.001850 |                  -0.005214 |                      -0.004475 |                     0.002589 |
-| V1a.2-B                 |     0.826209 |    0.841861 |     0.044991 |     0.314959 |     0.891108 |     0.919628 |      0.938827 | 0.843519 | 0.856415 | 0.850360 | 0.871199 |      0.012897 |    0.006841 |        0.027681 |      0.007943 | prompt_best          | smooth    |         0 |         0.100000 |          0.200000 |          1.250000 |                    0.014044 |                   0.018582 |                   -0.013695 |                    0.037764 |                    0.021426 |                    0.003999 |                     0.004749 |            0.007376 |                    -0.002001 |                  -0.002731 |                      -0.007027 |                    -0.002295 |
+| Model | M0 | Joint box gap | Interaction |
+|---|---:|---:|---:|
+| V1a.1 | 0.836142 | 0.034708 | 0.010238 |
+| V1a.2-A | 0.840618 | 0.030232 | 0.012827 |
+| V1a.2-B | **0.841626** | **0.029224** | **0.006936** |
+
+V1a.2-B remains the strongest geometry model. Relative to V1a.1, it raises M0 by 0.005484, reduces the joint box gap by 0.005484, and reduces center-size interaction by 0.003302 under a controlled expansion scale.
+
+## Checkpoint Pareto result
+
+Among V1a.2-B epochs 4, 5, 11, and 14, epoch 14 is the best negative-aware checkpoint:
+
+| Epoch | Positive-slice Dice | All-slice Dice | Case-volume Dice | Negative specificity |
+|---:|---:|---:|---:|---:|
+| 14 | 0.797241 | **0.772487** | **0.850753** | **0.759833** |
+| 11 | 0.798092 | 0.741495 | 0.848519 | 0.712134 |
+| 5 | 0.820649 | 0.399636 | 0.767727 | 0.179079 |
+| 4 | **0.826209** | 0.306048 | 0.753368 | 0.033473 |
+
+Later checkpoints trade some positive-slice Dice for substantially better specificity. Epoch 14 improves the V1a.2-B full-system operating point but remains below V1a.2-A locked case-volume Dice (0.850753 versus 0.855560).
+
+## Current decision
+
+- **Geometry conclusion:** V1a.2-B decoded-box supervision is supported and should be retained.
+- **Current complete automatic operating point:** V1a.2-A locked is the best evaluated configuration.
+- **V1a.2-B checkpoint:** epoch 14 is preferable to epoch 4 for negative-aware use, but is not the final winner.
+- **Next development target:** presence detection/calibration and negative-slice suppression, not additional box-loss complexity.
+
+Compact results and reproduction scripts are archived under `../followup_validation/`. Model checkpoints, MedSAM weights, processed NPZ data, and large per-slice outputs remain on Google Drive.
