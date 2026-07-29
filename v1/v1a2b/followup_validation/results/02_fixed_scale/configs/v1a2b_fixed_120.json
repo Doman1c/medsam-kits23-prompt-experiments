@@ -1,0 +1,41 @@
+{
+  "status": "locked_validation_configuration",
+  "development_split": "validation",
+  "test_set_used": false,
+  "experiment": "V1a.2-B",
+  "presence_candidate": "prompt_best",
+  "checkpoint_path": "/content/v1a1_work/v1a2b_run/best_continuous.pt",
+  "checkpoint_epoch": 4,
+  "weights": "ema",
+  "variant": "smooth",
+  "max_gap": 0,
+  "left_threshold": 0.1,
+  "right_threshold": 0.2,
+  "expansion_scale": 1.2,
+  "dice_mean": 0.8262089283163706,
+  "dice_median": 0.9393895836327919,
+  "case_level_dice_mean": 0.8418605470179287,
+  "oracle_scaled_dice_mean": 0.8711994836097713,
+  "oracle_gap_overall": 0.04499055529340068,
+  "oracle_gap_case_level": 0.04956847803840325,
+  "small_00_10_dice": 0.31495934923777075,
+  "medium_10_50_dice": 0.8911077250424397,
+  "large_50_90_dice": 0.9196281625524222,
+  "largest_90_100_dice": 0.9388265630179602,
+  "presence_metrics": {
+    "positive_recall": 1.0,
+    "left_positive_recall": 1.0,
+    "right_positive_recall": 1.0,
+    "false_positive_rate": 0.8059556247567147,
+    "prompt_success_rate": 0.82,
+    "continuous_score": 0.7141756944849459
+  },
+  "selection_rule": "Maximize validation case-level MedSAM Dice, break ties with slice-level Dice, then lower FPR.",
+  "artifact_sha256": {
+    "checkpoint": "6bde181a104e0c7acfec24a311ba8ac2e9ef202037d8c9a158728bf1e7ec42c2",
+    "calibration": "5883c489428e53cbf29051791c43385e467e5d265b3ce5b8b43a3a9cf37ddf28",
+    "predictions": "904187143272edc1ecdac1395aa89f1ab3b3587b6b6abf6dac66f6c8e646204b",
+    "medsam_summary": "2171b9292ceafa6fa57d5030d2d55df487b66b4f9cf396784ab6b91f1189c832"
+  },
+  "research_guardrail": "Do not use the frozen test set for checkpoint or calibration selection."
+}
