@@ -1,0 +1,5 @@
+scope,mode,n_slices,positive_slices,dice_mean,case_mean_dice,case_volume_dice,negative_specificity,positive_recall,false_positive_rate,oracle_gap
+prompt,smooth,4277,1473,,,,,0.9398050021195422,0.20839386602098467,
+positive_slice_medsam,dual_smooth,1473,1473,0.7238653918296678,0.7627328370808927,,,,,0.1474606996842398
+positive_slice_medsam,oracle_scaled,1473,1473,0.8713260915139076,0.8773371121811858,,,,,0.0
+negative_aware_medsam,v1a3a_epoch_018_frozen,4277,1474,0.747545878458055,0.7845970205805649,0.7995902880973497,0.7602568676418123,0.9715061058344641,0.23974313235818764,
