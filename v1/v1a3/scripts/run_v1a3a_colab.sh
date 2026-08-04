@@ -90,7 +90,9 @@ python "$REPO/v1/v1a3/scripts/test_v1a3_sampler.py" \
   --boundary-negative-share 0.35 \
   --near-negative-share 0.15 \
   --far-negative-share 0.05 \
-  --boundary-radius 8 \
+  --boundary-radius 3 \
+  --hard-negative-min-score 0.01 \
+  --hard-negative-top-k-per-case 32 \
   --unilateral-positive-boost 1.50 \
   --seed 42
 
@@ -108,8 +110,11 @@ python "$REPO/v1/v1a3/scripts/train_v1a3a.py" \
   --boundary-negative-share 0.35 \
   --near-negative-share 0.15 \
   --far-negative-share 0.05 \
-  --boundary-radius 8 \
+  --boundary-radius 3 \
+  --hard-negative-min-score 0.01 \
+  --hard-negative-top-k-per-case 32 \
   --unilateral-positive-boost 1.50 \
+  --presence-threshold 0.01 \
   --device cuda
 
 echo
