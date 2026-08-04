@@ -35,9 +35,9 @@ samplers, or loss variants.
 | [V1a.2-A](v1/v1a2/) | Does predicted-center size supervision repair train-inference mismatch? | Validation complete |
 | [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
-| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | In development |
+| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | **Frozen test complete** |
 
-## Completed V1a.2 findings
+## V1a.2 findings
 
 ### Negative-aware all-slice validation
 
@@ -51,9 +51,8 @@ fully negative slices.
 | V1a.2-B epoch 4 prompt-best | 0.3060 | 0.7534 | 0.0335 |
 | V1a.2-B epoch 14 calibrated | **0.7725** | 0.8508 | **0.7598** |
 
-The positive-slice V1a.2-B winner was not the best complete automatic operating
-point. Epoch 14 is the best negative-aware V1a.2-B checkpoint, while V1a.2-A
-remains slightly better in case-volume Dice.
+V1a.2-B is the strongest geometry design, while V1a.2-A remains slightly
+better in validation case-volume Dice.
 
 ### Fixed-scale geometry decomposition
 
@@ -66,39 +65,59 @@ All models were compared with ground-truth presence and expansion fixed at
 | V1a.2-A | 0.8406 | 0.0302 | 0.0128 |
 | V1a.2-B | **0.8416** | **0.0292** | **0.0069** |
 
-V1a.2-B is therefore the strongest geometry design. The remaining bottleneck
-is presence detection and negative-slice suppression.
+## Completed V1a.3-A study
 
-## Current development: V1a.3-A
+V1a.3-A retained the V1a.2-B architecture and optimized loss and changed only
+the training sampler. It used mined hard negatives, boundary negatives, near
+negatives, limited far negatives, and unilateral-positive oversampling.
 
-V1a.3-A retains the complete V1a.2-B geometry and optimized loss. Its intended
-change is limited to training-example sampling:
-
-```text
-V1a.2-B epoch-14 train predictions
-    -> presence error audit
-    -> hard-negative mining
-    -> boundary-negative and unilateral-positive sampling
-    -> V1a.3-A training from scratch
-    -> validation-only calibration and negative-aware MedSAM
-```
-
-Default sampled-row categories are:
+Validation selected epoch 18 with:
 
 ```text
-positive_bilateral
-positive_unilateral
-negative_mined
-negative_boundary
-negative_near
-negative_far
+EMA weights
+smooth presence
+max_gap = 2
+left threshold = 0.005
+right threshold = 0.005
+expansion scale = 1.20
 ```
 
-Training saves `best_presence.pt`, `best_geometry.pt`, and `best_joint.pt` as
-prompt-network proxies. Final selection still requires validation-only
-calibration and all-slice frozen-MedSAM evaluation.
+### Validation winner
 
-See [V1a.3-A design and Colab runbook](v1/v1a3/README.md).
+| Metric | V1a.3-A epoch 18 |
+|---|---:|
+| Positive-slice Dice | 0.8067 |
+| All-slice Dice | 0.7760 |
+| Case-volume Dice | 0.8479 |
+| Negative specificity | 0.7598 |
+
+The fixed-presence M0 geometry score was `0.8416`, showing that targeted
+sampling did not collapse V1a.2-B box geometry.
+
+### Frozen test
+
+The V1a.3-A protocol was locked before first test access and was not tuned
+afterward.
+
+| Metric | V1a.3-A frozen test |
+|---|---:|
+| Test cases | 27 |
+| Total slices | 4,277 |
+| Prompt positive-side recall | 0.9398 |
+| Prompt side FPR | 0.2084 |
+| Positive-slice MedSAM Dice | 0.7239 |
+| Positive-slice case-mean Dice | 0.7627 |
+| All-slice Dice | 0.7475 |
+| Case-volume Dice | 0.7996 |
+| Negative specificity | 0.7603 |
+
+V1a.3-A improved the controlled validation picture for negative-slice
+suppression while preserving geometry, but its frozen-test positive-slice Dice
+did not exceed the V1a.1 frozen baseline (`0.7628`). It is therefore retained as
+a completed negative-sampling study rather than a new overall system winner.
+
+See [V1a.3-A protocol and results](v1/v1a3/) and the
+[compact result bundle](v1/v1a3/results/).
 
 ## Repository structure
 
@@ -110,27 +129,13 @@ See [V1a.3-A design and Colab runbook](v1/v1a3/README.md).
     ├── v1a1/                   # frozen baseline and test analysis
     ├── v1a2/                   # predicted-center size supervision
     ├── v1a2b/                  # decoded-box supervision and follow-up validation
-    └── v1a3/                   # presence repair by targeted sampling
+    └── v1a3/                   # targeted-sampling presence repair
         ├── scripts/
         ├── v1a3/
+        ├── results/
         ├── DESIGN.md
         └── README.md
 ```
-
-## Colab entry point for V1a.3-A
-
-```bash
-!git clone \
-  -b v1a3-presence-repair \
-  https://github.com/Doman1c/medsam-kits23-prompt-experiments.git \
-  /content/medsam-kits23-prompt-experiments
-
-!bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a3/scripts/run_v1a3a_colab.sh
-```
-
-The helper expects the existing manifest, processed NPZ data, and V1a.2-B
-epoch-14 checkpoint. Large assets remain in Google Drive and are not committed.
 
 ## Reproducibility
 
@@ -138,6 +143,7 @@ Git contains source code, locked configurations, compact comparison tables, and
 summary documents. The repository intentionally excludes:
 
 ```text
+notebooks used only for Colab recovery
 model checkpoints (*.pt, *.pth)
 MedSAM weights
 raw KiTS23 volumes
@@ -146,17 +152,14 @@ large per-slice prediction tables
 full threshold-sweep tables
 ```
 
-## Frozen-test status
+Large immutable artifacts remain outside Git, while their locked SHA-256 values
+are recorded in the compact result files.
 
-The last frozen test evaluation remains V1a.1:
+## Frozen-test comparison
 
-| Metric | Result |
-|---|---:|
-| Test cases | 27 |
-| Positive slices | 1,473 |
-| Slice-level mean Dice | 0.7628 |
-| Case-level mean Dice | 0.7950 |
-| Oracle-scaled mean Dice | 0.8713 |
-| Automatic-to-oracle gap | 0.1085 |
+| Model | Positive-slice Dice | Positive case-mean Dice |
+|---|---:|---:|
+| V1a.1 | **0.7628** | **0.7950** |
+| V1a.3-A epoch 18 | 0.7239 | 0.7627 |
 
-V1a.2 and V1a.3 development have not used the frozen test split for selection.
+No V1a.3-A parameter was changed after the frozen test was opened.
