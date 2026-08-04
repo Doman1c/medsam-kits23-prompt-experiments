@@ -95,3 +95,8 @@ __pycache__/
 v1a1_work/
 runs/
 wandb/
+
+# Additional experiment intermediates
+**/raw/
+**/checkpoints/
+**/center_size_medsam_details.csv

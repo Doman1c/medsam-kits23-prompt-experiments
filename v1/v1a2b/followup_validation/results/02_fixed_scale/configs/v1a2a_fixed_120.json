@@ -1,0 +1,41 @@
+{
+  "status": "locked_validation_configuration",
+  "development_split": "validation",
+  "test_set_used": false,
+  "experiment": "V1a.2-A",
+  "presence_candidate": "prompt_best",
+  "checkpoint_path": "/content/v1a1_work/v1a2a_run_stable/best_continuous.pt",
+  "checkpoint_epoch": 12,
+  "weights": "ema",
+  "variant": "smooth",
+  "max_gap": 2,
+  "left_threshold": 0.01,
+  "right_threshold": 0.01,
+  "expansion_scale": 1.2,
+  "dice_mean": 0.8095584251958378,
+  "dice_median": 0.9366391184573003,
+  "case_level_dice_mean": 0.8261440117258433,
+  "oracle_scaled_dice_mean": 0.8708497242629178,
+  "oracle_gap_overall": 0.061291299067080085,
+  "oracle_gap_case_level": 0.06540090730736947,
+  "small_00_10_dice": 0.25828685495203485,
+  "medium_10_50_dice": 0.8677209938371169,
+  "large_50_90_dice": 0.9184239686540172,
+  "largest_90_100_dice": 0.9321110259354376,
+  "presence_metrics": {
+    "positive_recall": 0.9702325581395348,
+    "left_positive_recall": 0.947996589940324,
+    "right_positive_recall": 0.9969293756397134,
+    "false_positive_rate": 0.2251848968470222,
+    "prompt_success_rate": 0.8297674418604651,
+    "continuous_score": 0.7691777968989502
+  },
+  "selection_rule": "Maximize validation case-level MedSAM Dice, break ties with slice-level Dice, then lower FPR.",
+  "artifact_sha256": {
+    "checkpoint": "f06cda2bf3d2fa75dd75e599e041956756c61a8e6ebbffe431a4bf672daf3a59",
+    "calibration": "900716b82b68a988f5eb7362900297ecb30f0423007e56ac062b88e626083271",
+    "predictions": "8bcec68ade9f7ed9964a0699ebc01b78acdeea0508a5d9400880a9193c01cb98",
+    "medsam_summary": "4b477e656b5c25360321eaadde8024af083dec335882b071a5855c61c10a4bce"
+  },
+  "research_guardrail": "Do not use the frozen test set for checkpoint or calibration selection."
+}

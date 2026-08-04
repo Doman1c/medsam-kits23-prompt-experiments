@@ -1,0 +1,20 @@
+{
+  "candidate": "epoch6",
+  "variant": "smooth",
+  "max_gap": 0,
+  "left_threshold": 0.2,
+  "right_threshold": 0.3,
+  "expansion_scale": 1.2,
+  "dice_mean": 0.8121645598790859,
+  "dice_median": 0.9384037015615962,
+  "case_level_dice_mean": 0.8232787554363895,
+  "oracle_gap_overall": 0.058685164383831756,
+  "oracle_gap_case_level": 0.06826616359682325,
+  "small_00_10_dice": 0.2771951939061565,
+  "medium_10_50_dice": 0.869682157880567,
+  "large_50_90_dice": 0.9156294379106216,
+  "largest_90_100_dice": 0.9340771930384042,
+  "development_split": "validation",
+  "test_set_used": false,
+  "experiment": "V1a.1"
+}
