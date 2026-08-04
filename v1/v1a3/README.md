@@ -1,26 +1,22 @@
 # V1a.3-A — Presence repair by targeted sampling
 
-V1a.3-A starts after the completed V1a.2 follow-up validation.
+V1a.3-A is a controlled follow-up to V1a.2-B. It tests whether bilateral kidney
+presence errors are primarily caused by training-example composition.
 
-The previous stage established two separate conclusions:
-
-1. **V1a.2-B is the strongest box-geometry design.**
-2. **Presence decisions on fully negative and kidney-boundary slices remain the
-   main limitation of the complete automatic system.**
-
-V1a.3-A therefore keeps the V1a.2-B architecture and optimized loss unchanged.
-Its single intended modeling change is the training sampler.
+The experiment keeps the V1a.2-B architecture, optimized loss, optimizer, EMA,
+augmentation, model capacity, 2.5D input, case split, and frozen MedSAM
+unchanged. The only intended modeling change is the training sampler.
 
 ## Controlled change
 
 Unchanged from V1a.2-B:
 
-- 2.5D input;
 - bilateral presence heads;
 - heatmap center prediction;
 - predicted-center size supervision;
 - normalized decoded-corner SmoothL1;
-- optimizer, EMA, augmentation, model capacity, and data split.
+- 2.5D input;
+- optimizer, EMA, augmentation, model capacity, and case split.
 
 Changed in V1a.3-A:
 
@@ -28,11 +24,11 @@ Changed in V1a.3-A:
 - kidney-span boundary-negative oversampling;
 - near-negative retention;
 - limited far-negative sampling;
-- unilateral-positive oversampling to strengthen the absent contralateral side.
+- unilateral-positive oversampling to strengthen absent-side supervision.
 
-## Sampling categories
+## Final sampler
 
-Each training row is assigned exactly one category:
+Each training row belongs to exactly one category:
 
 ```text
 positive_bilateral
@@ -43,136 +39,147 @@ negative_near
 negative_far
 ```
 
-Default expected composition:
+The final executed configuration was:
 
 ```text
-fully negative rows = 45% of sampled rows
+fully negative sampling mass = 45%
 
-within negative rows:
-  mined hard negatives    = 45%
-  boundary negatives      = 35%
-  manifest near-negatives = 15%
-  far negatives           = 5%
+within negative mass:
+  mined hard negatives = 45%
+  boundary negatives   = 35%
+  near negatives       = 15%
+  far negatives        = 5%
+
+boundary radius              = 3 slices
+hard-negative minimum score  = 0.01
+hard-negative top-k per case = 32
+unilateral-positive boost    = 1.50
+seed                          = 42
 ```
 
-Shares are automatically renormalized when a category is unavailable.
+The final training set contained 20,953 rows. Hard-negative mining retained 993
+rows from 94 cases. The realized category masses matched the requested
+composition.
 
-## Checkpoint policy
+## Training
 
-Training saves three prompt-network proxy checkpoints:
+Training ran from scratch for 25 epochs and stopped after 12 epochs without a
+new prompt-network proxy winner. `best_presence.pt`, `best_geometry.pt`, and
+`best_joint.pt` all pointed to epoch 13.
+
+Those files were only training-time proxies. Final selection remained
+validation-only and used calibrated frozen-MedSAM results.
+
+## Validation selection
+
+Checkpoints 10, 13, 18, and 25 underwent presence calibration. Epoch 25 failed
+the locked recall constraints, epoch 10 was dominated by epoch 13, and epochs 13
+and 18 entered positive-slice and negative-aware frozen-MedSAM validation.
+
+| Candidate | Positive-slice Dice | All-slice Dice | Case-volume Dice | Negative specificity |
+|---|---:|---:|---:|---:|
+| Epoch 13 | 0.8039 | 0.7462 | 0.8388 | 0.7159 |
+| **Epoch 18** | **0.8067** | **0.7760** | **0.8479** | **0.7598** |
+
+The predeclared ranking rule was:
+
+1. higher case-volume Dice;
+2. higher all-slice mean Dice;
+3. lower negative false-positive mask rate.
+
+Epoch 18 became the unique frozen validation winner.
+
+### Locked configuration
 
 ```text
-best_presence.pt
-best_geometry.pt
-best_joint.pt
+checkpoint epoch: 18
+weights:          EMA
+variant:          smooth
+max_gap:          2
+left threshold:   0.005
+right threshold:  0.005
+expansion scale:  1.20
+target label:     kidney = 1
 ```
 
-These are not final selections. They must later undergo validation-only
-calibration, frozen-MedSAM evaluation, and all-slice negative-aware comparison.
+## Frozen test
 
-Final candidate ranking remains:
+The test protocol was locked before exporting any V1a.3-A test predictions.
+The test contained 27 cases and 4,277 slices. No checkpoint, threshold,
+smoothing, max-gap, expansion, sampler, or loss was changed after test access.
 
-1. negative-aware case-volume Dice;
-2. all-slice Dice;
-3. lower negative false-positive mask rate;
+### Prompt metrics
 
-subject to locked recall constraints.
+| Metric | Result |
+|---|---:|
+| Presence accuracy | 0.8325 |
+| Positive-side recall | 0.9398 |
+| Left recall | 0.9479 |
+| Right recall | 0.9291 |
+| Side false-positive rate | 0.2084 |
+| Tight-box IoU | 0.7089 |
+| Prompt success rate | 0.7596 |
 
-## Colab workflow
+### Positive-slice frozen MedSAM
 
-Clone the branch:
+| Mode | Slice Dice | Case-mean Dice |
+|---|---:|---:|
+| Automatic smooth prompts | 0.7239 | 0.7627 |
+| Oracle scaled boxes | 0.8713 | 0.8773 |
 
-```bash
-!git clone \
-  -b v1a3-presence-repair \
-  https://github.com/Doman1c/medsam-kits23-prompt-experiments.git \
-  /content/medsam-kits23-prompt-experiments
-```
+Automatic-to-oracle slice-Dice gap: `0.1475`.
 
-Run the full V1a.3-A preparation and training pipeline:
+### Negative-aware all-slice frozen MedSAM
 
-```bash
-!bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a3/scripts/run_v1a3a_colab.sh
-```
+| Metric | Result |
+|---|---:|
+| All-slice mean Dice | 0.7475 |
+| All-slice case-mean Dice | 0.7846 |
+| Case-volume Dice | 0.7996 |
+| Positive-slice Dice | 0.7234 |
+| Positive-slice detection recall | 0.9715 |
+| Negative specificity | 0.7603 |
+| Negative false-positive mask rate | 0.2397 |
 
-The helper performs:
+The canonical manifest contains 1,473 positive test slices. The all-slice
+evaluator counts 1,474 label-positive slices because `case_00293`, slice 513,
+contains one target-label pixel below the manifest's minimum-component-area
+filter. This discrepancy is documented and was not used to alter the frozen
+evaluation.
+
+## Interpretation
+
+V1a.3-A supports the validation conclusion that targeted negative sampling
+improves negative-slice suppression while preserving V1a.2-B geometry. The
+epoch-18 fixed-presence geometry score was effectively unchanged from V1a.2-B:
 
 ```text
-V1a.2-B epoch-14 predictions on train split
--> presence error audit
--> hard-negative mining
--> deterministic sampler gate
--> full V1a.3-A training
--> Google Drive checkpoint backup
+M0 automatic center + automatic size = 0.8416
+joint oracle-box gap                  = 0.0293
 ```
 
-Default paths:
+The frozen test did not establish V1a.3-A as a new overall winner. Its automatic
+positive-slice Dice (`0.7239`) and case-mean Dice (`0.7627`) were below the
+V1a.1 frozen baseline (`0.7628` and `0.7950`).
+
+The correct conclusion is therefore:
+
+> Targeted sampling repaired part of the presence/negative-slice failure mode
+> on validation without damaging box geometry, but the improvement did not
+> translate into a stronger frozen-test positive-slice system.
+
+## Results committed to Git
+
+Compact results are under [`results/`](results/):
 
 ```text
-repository:
-  /content/medsam-kits23-prompt-experiments
-
-manifest:
-  /content/v1a1_work/manifest/v1a1_dual_manifest.csv
-
-working output:
-  /content/v1a1_work/v1a3a_run
-
-Drive backup:
-  /content/drive/MyDrive/medsam-kits23/v1a3_results/v1a3a_run
+results/
+├── README.md
+├── final_results.json
+├── validation_negative_aware_comparison.csv
+├── frozen_test_metrics.csv
+└── test_protocol_lock.json
 ```
 
-All paths can be overridden with environment variables.
-
-## Individual stages
-
-Presence audit:
-
-```bash
-python v1/v1a3/scripts/audit_presence_errors.py \
-  --repo-root /content/medsam-kits23-prompt-experiments \
-  --manifest /content/v1a1_work/manifest/v1a1_dual_manifest.csv \
-  --predictions /content/v1a1_work/v1a3a_presence_audit/train_predictions.csv \
-  --output-dir /content/v1a1_work/v1a3a_presence_audit/train \
-  --split train
-```
-
-Sampler gate:
-
-```bash
-python v1/v1a3/scripts/test_v1a3_sampler.py \
-  --repo-root /content/medsam-kits23-prompt-experiments \
-  --manifest /content/v1a1_work/manifest/v1a1_dual_manifest.csv \
-  --hard-negative-csv \
-    /content/v1a1_work/v1a3a_presence_audit/train/hard_negative_pool.csv \
-  --output-dir /content/v1a1_work/v1a3a_presence_audit/sampler_gate
-```
-
-Training:
-
-```bash
-python v1/v1a3/scripts/train_v1a3a.py \
-  --manifest /content/v1a1_work/manifest/v1a1_dual_manifest.csv \
-  --hard-negative-csv \
-    /content/v1a1_work/v1a3a_presence_audit/train/hard_negative_pool.csv \
-  --output-dir /content/v1a1_work/v1a3a_run \
-  --backup-dir \
-    /content/drive/MyDrive/medsam-kits23/v1a3_results/v1a3a_run \
-  --device cuda
-```
-
-## Required gates
-
-Stop before the full run when:
-
-- the hard-negative pool is unexpectedly empty;
-- the realized negative fraction differs materially from the requested fraction;
-- mined or boundary categories receive zero samples while available;
-- any training loss becomes non-finite;
-- geometry metrics collapse relative to V1a.2-B.
-
-## Test-split rule
-
-V1a.3 development remains validation-only. The frozen test split is not used for
-sampler, checkpoint, threshold, smoothing, expansion, or loss selection.
+The repository intentionally excludes notebooks, model weights, processed NPZ
+slices, and large per-slice prediction tables.
