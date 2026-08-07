@@ -8,10 +8,10 @@ those low-confidence slices is too poor for frozen MedSAM.
 V1a.5 therefore asks:
 
 > When case-level context says a slice should be prompted, can its spatial box be
-> recovered from nearby reliable slices instead of trusting that slice's native
+> recovered from reliable z-axis geometry instead of trusting that slice's native
 > center/size prediction?
 
-No retraining is performed in Stage 1.
+No retraining is performed.
 
 ## Frozen upstream
 
@@ -22,7 +22,7 @@ checkpoint SHA256 = f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a3
 expansion         = 1.20
 ```
 
-The V1a.4 R2b presence decoder is also frozen:
+The V1a.4 R2b presence decoder is frozen:
 
 ```text
 satellite max distance   = 64
@@ -49,85 +49,74 @@ G3 = frozen V1a.4 R2b
 Only side-slices newly recovered by R2b are allowed to change geometry in G2/G3.
 Presence and every non-recovered box remain frozen.
 
-Stage 1 performs geometry audit + prompt-quality evaluation only. It does not run
-MedSAM and does not access any test split.
+The predeclared advancement rule is strict: a geometry method may advance to
+negative-aware MedSAM only if it improves both recovered-slice tight-box IoU and
+recovered-slice median center error relative to G1.
 
-## Existing Colab runtime
+## Stage-1 result
 
-If the runtime used for V1a.4 Stage 2 is still alive, update the repository and
-restore the V1a.5 gate:
+The review bundle contained 20 listed result files; all recorded sizes and
+SHA-256 values were verified. No MedSAM result, test result, checkpoint, NPZ, or
+large prediction table was included.
 
-```bash
-cd /content/medsam-kits23-prompt-experiments
+The R2b-recovered subset contains 25 positive side-slices, all from
+`case_00067 / left`, slices `19..43`.
 
-git fetch origin
-git checkout -B v1a5-geometry-recovery origin/v1a5-geometry-recovery
+| Candidate | Recovered IoU mean | Recovered center-error median | Recovered coverage | Prompt success | Advance? |
+|---|---:|---:|---:|---:|---|
+| G1 R2b native | 0.03285 | 5.2500 | 0.1957 | 0.000 | reference |
+| G2 nearest anchor | 0.00000 | 7.3611 | 0.0000 | 0.000 | no |
+| G3 linear trend | 0.00000 | **4.6887** | 0.0000 | 0.000 | no |
 
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a5/scripts/restore_v1a5_colab.sh
-```
-
-Then run Stage 1:
-
-```bash
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a5/scripts/run_v1a5_stage1.sh
-```
-
-The runner searches for the frozen B1 and R2b validation prediction tables in
-both the current `/content` workspace and the V1a.4 Drive backups.
-
-Outputs:
+Global validation presence is unchanged across G1/G2/G3:
 
 ```text
-/content/v1a1_work/v1a5_stage1/
-/content/drive/MyDrive/medsam-kits23/v1a5_results/stage1/
+positive recall = 0.96186
+FPR             = 0.11931
 ```
 
-## Fresh Colab runtime
+The nearest frozen-B1 anchor is extremely far from the remote recovered segment:
 
-Mount Drive and configure the private GitHub repository as before, then clone the
-V1a.5 branch:
-
-```bash
-rm -rf /content/medsam-kits23-prompt-experiments
-
-git clone -b v1a5-geometry-recovery \
-  https://github.com/Doman1c/medsam-kits23-prompt-experiments.git \
-  /content/medsam-kits23-prompt-experiments
-
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a5/scripts/restore_v1a5_colab.sh
+```text
+minimum distance = 49 slices
+median distance  = 61 slices
+maximum distance = 73 slices
 ```
 
-The restore wrapper reuses the proven V1a.4/V1a.3-B asset recovery and validates:
+This explains the failure mode. G2 copies a box from a spatially different distant
+anchor region and loses all overlap. G3 improves the normalized center-error
+median slightly through extrapolation, but every recovered slice still has zero
+tight-box IoU and zero expanded coverage.
 
-- frozen V1a.4 ancestry;
-- epoch-18 checkpoint SHA;
-- 20 validation cases / 3,644 validation rows;
-- validation NPZ paths;
-- MedSAM assets for later stages;
-- V1a.5 synthetic geometry gate.
+The native G1 geometry is poor but not uniformly useless: 5/25 recovered slices
+have non-zero IoU and one slice reaches IoU >= 0.5. G2/G3 remove even that limited
+overlap.
 
-After restore, run the same Stage-1 command above.
+## Final decision
 
-## Package Stage 1
+V1a.5 stops at Stage 1 under the predeclared rule:
 
-```bash
-python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a5/scripts/package_v1a5_stage1.py \
-  --root /content/v1a1_work/v1a5_stage1 \
-  --output /content/v1a5_stage1_review.zip
-```
+- neither G2 nor G3 improves recovered-slice IoU versus G1;
+- no V1a.5 negative-aware MedSAM run is performed;
+- no V1a.5 secondary-test run is performed;
+- no post-Stage-1 tuning of anchor count, propagation distance, or trend model is
+  allowed;
+- frozen V1a.3-B B1 remains the current complete-system validation winner.
 
-Upload `v1a5_stage1_review.zip` for review before any V1a.5 MedSAM run.
+The conclusion is frozen in `FINAL_DECISION.json`. Compact Stage-1 results are
+stored under `results/`.
 
-The compact review bundle excludes recommended prediction tables, per-slice
-prompt details, checkpoints, NPZ data, MedSAM weights, notebooks, and test
-results.
+## Interpretation
+
+V1a.4 established that the remote presence signal is useful. V1a.5 shows that
+**geometry from the distant frozen-B1 span is not a valid source for recovering a
+remote satellite box**. The next geometry experiment, if pursued, should use
+information local to the recovered satellite itself (for example robust
+within-satellite geometry consensus) or a learned/cross-slice geometry mechanism,
+rather than continuing to extrapolate from anchors 49-73 slices away.
 
 ## Development rule
 
-The V1a.3-B/V1a.4 27-case secondary split is already exposed and is not used for
-V1a.5 selection. Stage-1 decisions are validation-only. See `DESIGN.md` and
-`BASELINE_LOCK.json` for the frozen experiment definition.
+The V1a.3-B/V1a.4 27-case secondary split is already exposed and was not used for
+V1a.5 selection. V1a.5 is validation-only. See `DESIGN.md`, `BASELINE_LOCK.json`,
+and `FINAL_DECISION.json` for the frozen experiment definition and stopping rule.
