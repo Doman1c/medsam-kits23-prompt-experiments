@@ -1,0 +1,45 @@
+{
+  "experiment": "V1a.5",
+  "status": "validation_only_geometry_recovery_development",
+  "base": {
+    "v1a4_merge_commit": "221f7f63a3a727b96c286edf09b9ad47e84bf555",
+    "upstream_checkpoint": "V1a.3-A epoch 18",
+    "weights": "ema",
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "presence_reference": {
+      "frozen_b1": {
+        "left_threshold": 0.0035,
+        "right_threshold": 0.04,
+        "baseline_max_gap": 4,
+        "boundary_pad": 1
+      },
+      "r2b_remote_satellite": {
+        "mode": "remote_satellite",
+        "satellite_max_distance": 64,
+        "satellite_evidence_ratio": 0.1,
+        "satellite_min_length": 1,
+        "max_satellites": 1
+      }
+    },
+    "expansion_scale": 1.2,
+    "target_labels": [1]
+  },
+  "stage1_candidates": {
+    "G0": "V1a.3-B frozen B1 reference",
+    "G1": "V1a.4 R2b presence with native per-slice geometry",
+    "G2": "R2b presence with nearest reliable B1-anchor box copied onto recovered side-slices",
+    "G3": "R2b presence with z-axis linear box trend estimated from the nearest 5 reliable B1 anchors and extrapolated/interpolated onto recovered side-slices"
+  },
+  "stage1_policy": {
+    "split": "validation",
+    "expected_cases": 20,
+    "expected_rows": 3644,
+    "retraining": false,
+    "presence_changes": false,
+    "non_recovered_geometry_changes": false,
+    "medsam_allowed": false,
+    "test_access_allowed": false,
+    "trend_anchor_count": 5,
+    "advance_rule": "A geometry-recovery candidate may advance only if recovered-side prompt geometry improves over G1 without changing R2b presence or any non-recovered geometry."
+  }
+}

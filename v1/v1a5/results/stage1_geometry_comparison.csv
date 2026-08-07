@@ -1,0 +1,5 @@
+candidate,global_positive_recall,global_false_positive_rate,global_prompt_success_rate,global_tight_box_iou,global_continuous_score,recovered_side_samples,recovered_prompt_success_rate,recovered_tight_box_iou_mean,recovered_tight_box_iou_median,recovered_center_error_fraction_mean,recovered_center_error_fraction_median,recovered_expanded_coverage_mean,advance_to_medsam_review
+g0_frozen_b1,0.9502325581,0.1193071234,0.8232558140,0.7605479775,0.7786571109,25,0.0,0.0,0.0,, ,0.0,false
+g1_r2b_native,0.9618604651,0.1193071234,0.8232558140,0.7609294139,0.7819189154,25,0.0,0.0328469925,0.0,9.8632372172,5.25,0.1956578079,false
+g2_nearest_anchor,0.9618604651,0.1193071234,0.8232558140,0.7605479775,0.7809833351,25,0.0,0.0,0.0,8.4337986681,7.3611111111,0.0,false
+g3_linear_trend,0.9618604651,0.1193071234,0.8232558140,0.7605479775,0.7809833351,25,0.0,0.0,0.0,5.8370038757,4.6886899443,0.0,false

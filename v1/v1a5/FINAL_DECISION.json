@@ -1,0 +1,28 @@
+{
+  "experiment": "V1a.5",
+  "status": "validation_complete_no_geometry_winner",
+  "test_set_used": false,
+  "medsam_stage2_run": false,
+  "secondary_test_run": false,
+  "frozen_upstream": {
+    "v1a4_merge_commit": "221f7f63a3a727b96c286edf09b9ad47e84bf555",
+    "checkpoint": "V1a.3-A epoch 18 EMA",
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "presence": "V1a.4 R2b remote_satellite",
+    "expansion_scale": 1.2
+  },
+  "stage1_gate": {
+    "rule": "Advance only if recovered-slice tight-box IoU increases and recovered-slice median center-error fraction decreases versus G1, with R2b presence and non-recovered geometry unchanged.",
+    "g2_nearest_anchor_passed": false,
+    "g3_linear_trend_passed": false
+  },
+  "decision": {
+    "system_winner_remains": "V1a.3-B frozen B1",
+    "v1a5_replacement_selected": false,
+    "run_negative_aware_medsam": false,
+    "run_secondary_test": false,
+    "post_stage1_parameter_tuning_allowed": false
+  },
+  "reason": "The remote recovered subset is 49-73 slices away from frozen-B1 reliable anchors. Nearest-anchor propagation produces zero recovered-slice IoU/coverage, while five-anchor linear extrapolation lowers normalized center-error median from 5.25 to 4.69 but still produces zero recovered-slice IoU/coverage. Neither method satisfies the predeclared geometry advancement gate.",
+  "next_research_question": "If geometry recovery is revisited, it should use information local to the recovered satellite itself or a learned/cross-slice geometry mechanism, rather than extrapolating from a distant frozen-B1 anchor region. This requires a separately predeclared experiment rather than post-hoc V1a.5 tuning."
+}
