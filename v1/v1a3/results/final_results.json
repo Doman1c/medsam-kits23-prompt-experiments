@@ -1,0 +1,169 @@
+{
+  "experiment": "V1a.3-A",
+  "status": "completed_frozen_test",
+  "controlled_change": "targeted training sampler only; V1a.2-B architecture and optimized loss unchanged",
+  "source_bundle_sha256": {
+    "preflight": "178fcb0da04234d87b6ee253044a9fb32e750536a749fe3dbf22f2dd23663f15",
+    "full_run": "874cd7b07ad1102ae38645d1a8743c87ceb271ead857fa5770a4877dad601a71",
+    "calibration": "fcc1bca50082ecce1a19d3cc016362165a5a4214ffb5e48e83bfd537f0cd71d1",
+    "finalists": "a03a499cd0ba9928151feec262060e1b6ca744c8ef152ba33a74189feacb6ebe",
+    "frozen_test": "0dac89fd2caea0163b56ea6d6919787b6cc8977ec65851c4d8a32319c6292d7d"
+  },
+  "training": {
+    "epochs_completed": 25,
+    "early_stopping": true,
+    "proxy_best_epoch": 13,
+    "sampler": {
+      "training_rows": 20953,
+      "positive_rows": 7440,
+      "negative_rows": 13513,
+      "num_samples_per_epoch": 13527,
+      "config": {
+        "negative_fraction": 0.45,
+        "mined_negative_share": 0.45,
+        "boundary_negative_share": 0.35,
+        "near_negative_share": 0.15,
+        "far_negative_share": 0.05,
+        "boundary_radius": 3,
+        "hard_negative_min_score": 0.01,
+        "hard_negative_top_k_per_case": 32,
+        "unilateral_positive_boost": 1.5,
+        "seed": 42
+      },
+      "category_counts": {
+        "negative_far": 11796,
+        "positive_bilateral": 4919,
+        "positive_unilateral": 2521,
+        "negative_mined": 797,
+        "negative_boundary": 541,
+        "negative_near": 379
+      },
+      "category_probability_mass": {
+        "negative_boundary": 0.1575,
+        "negative_far": 0.022500000000000003,
+        "negative_mined": 0.2025,
+        "negative_near": 0.0675,
+        "positive_bilateral": 0.270827122300004,
+        "positive_unilateral": 0.27917287769999605
+      },
+      "hard_negative_selected_rows": 993,
+      "hard_negative_selected_cases": 94
+    }
+  },
+  "validation": {
+    "selection_rule": "Rank by case-volume Dice, then all-slice mean Dice, then lower negative false-positive mask rate.",
+    "epoch_013": {
+      "positive_slice_dice": 0.8038777330469195,
+      "all_slice_dice": 0.7461752681780562,
+      "case_volume_dice": 0.838834180140789,
+      "negative_specificity": 0.7158995815899581,
+      "positive_slice_detection_recall": 0.9633173843700159,
+      "expansion_scale": 1.15
+    },
+    "epoch_018": {
+      "positive_slice_dice": 0.8066774380455926,
+      "all_slice_dice": 0.7759532127632197,
+      "case_volume_dice": 0.8479044104122602,
+      "negative_specificity": 0.7598326359832636,
+      "positive_slice_detection_recall": 0.9537480063795853,
+      "expansion_scale": 1.2
+    },
+    "winner": {
+      "checkpoint_epoch": 18,
+      "weights": "ema",
+      "variant": "smooth",
+      "max_gap": 2,
+      "left_threshold": 0.005,
+      "right_threshold": 0.005,
+      "expansion_scale": 1.2,
+      "artifact_sha256": {
+        "checkpoint": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+        "calibration": "3d8c6baa4bcebe414fb2dc4aae023c1ce62366494b868ff7b06f65ae5d50f09f",
+        "predictions": "731edbdd031875dfc8fc30a7c1010433c6b60de407ea061962814debe0f1ada0",
+        "medsam_summary": "148dd05ba9702908d97a46ca32c7ca3dccfbb2aa61d255681dd7a72c3ee8c08d"
+      }
+    },
+    "geometry_decomposition": {
+      "M0_auto_center_auto_size_mean": 0.8415576484421634,
+      "M1_oracle_center_auto_size_mean": 0.8547109877502804,
+      "M2_auto_center_oracle_size_mean": 0.8457517865885077,
+      "M3_oracle_center_oracle_size_mean": 0.8708680223926765,
+      "oracle_center_gain_mean_M1_minus_M0": 0.013153339308117072,
+      "oracle_size_gain_mean_M2_minus_M0": 0.00419413814634417,
+      "joint_oracle_box_gain_mean_M3_minus_M0": 0.029310373950512975,
+      "center_size_interaction_mean": 0.011962896496051737
+    }
+  },
+  "frozen_test": {
+    "protocol_lock": {
+      "status": "locked_before_first_v1a3a_test_access",
+      "test_set_used_before_lock": false,
+      "model": {
+        "experiment": "V1a.3-A",
+        "checkpoint_epoch": 18,
+        "weights": "ema"
+      },
+      "configuration": {
+        "variant": "smooth",
+        "max_gap": 2,
+        "left_threshold": 0.005,
+        "right_threshold": 0.005,
+        "expansion_scale": 1.2,
+        "target_labels": [1]
+      },
+      "expected_test": {
+        "cases": 27,
+        "rows": 4277,
+        "positive_slices": 1473
+      },
+      "sha256": {
+        "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+        "calibration_sha256": "3d8c6baa4bcebe414fb2dc4aae023c1ce62366494b868ff7b06f65ae5d50f09f",
+        "final_config_sha256": "20890ca3c55c56cd5d31cb64440c5ffb63d5f41ab6bc2eb3ecad7ed989d8b972"
+      }
+    },
+    "prompt": {
+      "presence_accuracy": 0.8324760346036941,
+      "positive_recall": 0.9398050021195422,
+      "false_positive_rate": 0.20839386602098467,
+      "left_positive_recall": 0.9479166666666666,
+      "right_positive_recall": 0.929064039408867,
+      "tight_box_iou": 0.708945919679948,
+      "prompt_success_rate": 0.7596439169139466,
+      "continuous_score": 0.7426355585238279
+    },
+    "positive_slice_medsam": {
+      "automatic_slice_dice": 0.7238653918296678,
+      "automatic_case_mean_dice": 0.7627328370808927,
+      "oracle_scaled_slice_dice": 0.8713260915139076,
+      "oracle_scaled_case_mean_dice": 0.8773371121811858,
+      "automatic_to_oracle_gap": 0.1474606996842398
+    },
+    "negative_aware": {
+      "n_slices": 4277,
+      "n_positive_slices": 1474,
+      "n_negative_slices": 2803,
+      "all_slice_dice_mean": 0.747545878458055,
+      "all_slice_case_mean_dice": 0.7845970205805649,
+      "positive_slice_dice_mean": 0.7233743026900277,
+      "positive_slice_detection_recall": 0.9715061058344641,
+      "negative_slice_specificity": 0.7602568676418123,
+      "negative_false_positive_mask_rate": 0.23974313235818764,
+      "case_volume_dice_mean": 0.7995902880973497
+    },
+    "label_count_note": {
+      "manifest_positive_slices": 1473,
+      "label_derived_positive_slices": 1474,
+      "case_id": "case_00293",
+      "slice_idx": 513,
+      "gt_pixels": 1,
+      "reason": "The manifest filters connected components smaller than five pixels; the all-slice evaluator treats any target-label pixel as positive."
+    }
+  },
+  "conclusion": {
+    "validation": "Targeted sampling improved negative-slice suppression while preserving V1a.2-B box geometry.",
+    "test": "The frozen test did not outperform V1a.1 on positive-slice MedSAM Dice.",
+    "overall_winner": false,
+    "post_test_tuning": false
+  }
+}

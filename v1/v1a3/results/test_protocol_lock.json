@@ -1,0 +1,29 @@
+{
+  "status": "locked_before_first_v1a3a_test_access",
+  "test_set_used_before_lock": false,
+  "model": {
+    "experiment": "V1a.3-A",
+    "checkpoint_epoch": 18,
+    "weights": "ema"
+  },
+  "configuration": {
+    "variant": "smooth",
+    "max_gap": 2,
+    "left_threshold": 0.005,
+    "right_threshold": 0.005,
+    "expansion_scale": 1.2,
+    "target_labels": [
+      1
+    ]
+  },
+  "expected_test": {
+    "cases": 27,
+    "rows": 4277,
+    "positive_slices": 1473
+  },
+  "sha256": {
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "calibration_sha256": "3d8c6baa4bcebe414fb2dc4aae023c1ce62366494b868ff7b06f65ae5d50f09f",
+    "final_config_sha256": "20890ca3c55c56cd5d31cb64440c5ffb63d5f41ab6bc2eb3ecad7ed989d8b972"
+  }
+}
