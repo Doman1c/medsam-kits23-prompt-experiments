@@ -1,0 +1,22 @@
+{
+  "experiment": "V1a.4",
+  "status": "validation_complete_no_new_system_winner",
+  "selection_rule": "Rank by case-volume Dice, then all-slice mean Dice, then lower negative false-positive mask rate.",
+  "validation_winner": "v1a3b_frozen_b1",
+  "v1a4_replacement_selected": false,
+  "secondary_test_planned": false,
+  "reason": "Both V1a.4 recovery families improved validation presence recall, but neither improved the predeclared primary Stage-2 MedSAM ranking metric. The frozen V1a.3-B B1 baseline retains the best validation case-volume Dice (0.8547517823). R2b raises presence recall to 0.9618604651 at unchanged FPR but reduces case-volume Dice to 0.8539345306 because recovered remote slices have poor frozen box/MedSAM quality.",
+  "r2b_diagnostic": {
+    "newly_prompted_gt_positive_combined_slices": 22,
+    "newly_prompted_gt_negative_combined_slices": 0,
+    "case_id": "case_00067",
+    "additional_tp_pixels": 650,
+    "additional_fp_pixels": 19374,
+    "median_recovered_slice_dice": 0.0
+  },
+  "development_stop": {
+    "post_stage2_decoder_tuning_allowed": false,
+    "test_access_for_v1a4_allowed": false,
+    "next_question": "Presence recovery alone is insufficient when box geometry on recovered remote slices is unreliable. Future development should address geometry/prompt quality for low-confidence or remotely recovered slices rather than further widening case-level presence post-processing."
+  }
+}
