@@ -1,0 +1,99 @@
+{
+  "experiment": "V1a.5",
+  "stage": "stage1_validation_geometry_recovery",
+  "status": "complete_stop_before_medsam",
+  "test_set_used": false,
+  "medsam_used": false,
+  "bundle_integrity": {
+    "bundle_sha256": "a1efcd6f37d2a6b933e61966602d0577f1857f5c143fdbb989400f3c93aa09d1",
+    "listed_files": 20,
+    "size_and_sha256_verified": true,
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "recovered_subset": {
+    "side_samples": 25,
+    "gt_positive": 25,
+    "gt_negative": 0,
+    "case_id": "case_00067",
+    "side": "left",
+    "slice_range": [19, 43]
+  },
+  "candidates": {
+    "g0_frozen_b1": {
+      "global_positive_recall": 0.9502325581395349,
+      "global_false_positive_rate": 0.11930712339431686,
+      "global_prompt_success_rate": 0.8232558139534883,
+      "global_tight_box_iou": 0.7605479775381062,
+      "global_continuous_score": 0.7786571108966611
+    },
+    "g1_r2b_native": {
+      "global_positive_recall": 0.9618604651162791,
+      "global_false_positive_rate": 0.11930712339431686,
+      "global_prompt_success_rate": 0.8232558139534883,
+      "global_tight_box_iou": 0.7609294138817366,
+      "global_continuous_score": 0.7819189153571807,
+      "recovered_prompt_success_rate": 0.0,
+      "recovered_tight_box_iou_mean": 0.0328469924915166,
+      "recovered_tight_box_iou_median": 0.0,
+      "recovered_center_error_fraction_mean": 9.863237217155574,
+      "recovered_center_error_fraction_median": 5.25,
+      "recovered_expanded_coverage_mean": 0.1956578078854196,
+      "recovered_iou_positive_slices": 5,
+      "recovered_iou_ge_0_5_slices": 1
+    },
+    "g2_nearest_anchor": {
+      "global_positive_recall": 0.9618604651162791,
+      "global_false_positive_rate": 0.11930712339431686,
+      "global_prompt_success_rate": 0.8232558139534883,
+      "global_tight_box_iou": 0.7605479775381062,
+      "global_continuous_score": 0.780983335101658,
+      "recovered_prompt_success_rate": 0.0,
+      "recovered_tight_box_iou_mean": 0.0,
+      "recovered_tight_box_iou_median": 0.0,
+      "recovered_center_error_fraction_mean": 8.433798668099866,
+      "recovered_center_error_fraction_median": 7.361111111111111,
+      "recovered_expanded_coverage_mean": 0.0,
+      "nearest_anchor_distance_min": 49,
+      "nearest_anchor_distance_median": 61,
+      "nearest_anchor_distance_max": 73
+    },
+    "g3_linear_trend": {
+      "global_positive_recall": 0.9618604651162791,
+      "global_false_positive_rate": 0.11930712339431686,
+      "global_prompt_success_rate": 0.8232558139534883,
+      "global_tight_box_iou": 0.7605479775381062,
+      "global_continuous_score": 0.780983335101658,
+      "recovered_prompt_success_rate": 0.0,
+      "recovered_tight_box_iou_mean": 0.0,
+      "recovered_tight_box_iou_median": 0.0,
+      "recovered_center_error_fraction_mean": 5.837003875696135,
+      "recovered_center_error_fraction_median": 4.68868994434554,
+      "recovered_expanded_coverage_mean": 0.0,
+      "nearest_anchor_distance_min": 49,
+      "nearest_anchor_distance_median": 61,
+      "nearest_anchor_distance_max": 73,
+      "anchor_count": 5
+    }
+  },
+  "geometry_gate": {
+    "g2_nearest_anchor": {
+      "improves_recovered_iou": false,
+      "improves_recovered_center": false,
+      "improves_recovered_prompt_success": false,
+      "advance_to_medsam_review": false
+    },
+    "g3_linear_trend": {
+      "improves_recovered_iou": false,
+      "improves_recovered_center": true,
+      "improves_recovered_prompt_success": false,
+      "advance_to_medsam_review": false
+    }
+  },
+  "interpretation": {
+    "nearest_anchor": "Copying geometry from the nearest frozen-B1 anchor fails because the recovered remote satellite is 49-73 slices away from the reliable anchor region; recovered IoU and expanded coverage collapse to zero.",
+    "linear_trend": "Five-anchor linear extrapolation modestly improves normalized center-error median but still yields zero recovered-slice IoU and zero expanded coverage, so it does not recover a usable MedSAM box.",
+    "conclusion": "The predeclared V1a.5 geometry-recovery methods do not improve recovered-slice box IoU relative to native R2b geometry. Under the locked stopping rule, V1a.5 stops before MedSAM and no secondary-test evaluation is warranted."
+  }
+}
