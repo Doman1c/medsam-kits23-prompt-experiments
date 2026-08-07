@@ -20,7 +20,8 @@ EXPECTED_CKPT_SHA256="f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008
 PREPARE="$REPO/v1/v1a4/scripts/prepare_v1a4_stage2_candidates.py"
 PROMPT_EVAL="$REPO/v1/v1a1/scripts/evaluate_dual_prompts.py"
 NEGATIVE_AWARE="$REPO/v1/v1a2b/followup_validation/tools/negative_aware_medsam_compare.py"
-LOCK="$REPO/v1/v1a4/BASELINE_LOCK.json"
+BASE_LOCK="$REPO/v1/v1a4/BASELINE_LOCK.json"
+STAGE2_LOCK="$REPO/v1/v1a4/STAGE2_LOCK.json"
 
 for path in \
   "$MANIFEST" \
@@ -30,7 +31,8 @@ for path in \
   "$PROMPT_EVAL" \
   "$NEGATIVE_AWARE" \
   "$MEDSAM_CKPT" \
-  "$LOCK"
+  "$BASE_LOCK" \
+  "$STAGE2_LOCK"
 do
   [[ -e "$path" ]] || {
     echo "ERROR: missing $path" >&2
@@ -53,9 +55,18 @@ python - <<PY
 from pathlib import Path
 import json
 import pandas as pd
-lock = json.loads(Path('$LOCK').read_text(encoding='utf-8'))
-assert lock['base']['v1a3b_merge_commit'] == '36c260096f733fc54e4db0819cc04527d021eff6'
-assert lock['stage1b']['medsam_allowed_before_presence_gate'] is False
+base_lock = json.loads(Path('$BASE_LOCK').read_text(encoding='utf-8'))
+stage2_lock = json.loads(Path('$STAGE2_LOCK').read_text(encoding='utf-8'))
+assert base_lock['base']['v1a3b_merge_commit'] == '36c260096f733fc54e4db0819cc04527d021eff6'
+assert stage2_lock['status'] == 'stage2_validation_candidates_frozen_before_medsam'
+assert stage2_lock['test_set_used'] is False
+assert stage2_lock['candidate_selection']['performed_before_medsam'] is True
+assert [x['name'] for x in stage2_lock['candidate_selection']['candidates']] == [
+    'v1a3b_frozen_b1',
+    'stage1_fixed_local_hysteresis',
+    'r2b_remote_satellite_1',
+    'r3_hybrid_1',
+]
 m = pd.read_csv('$MANIFEST', dtype={'case_id': str})
 val = m[m['split'].astype(str) == 'val']
 assert val['case_id'].nunique() == 20
@@ -65,6 +76,7 @@ print({
     'validation_cases': 20,
     'validation_rows': 3644,
     'checkpoint_sha256': '$ACTUAL_CKPT_SHA256',
+    'candidate_count': 4,
     'test_access': False,
 })
 PY
