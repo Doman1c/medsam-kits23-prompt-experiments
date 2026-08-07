@@ -37,7 +37,9 @@ expansion, samplers, loss variants, or later decoder parameters.
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
 | [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | Frozen test complete |
 | [V1a.3-B](v1/v1a3b/) | Can case-level single-span decoding suppress detached presence islands? | Secondary evaluation complete |
-| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | **Validation complete — no new winner** |
+| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | Validation complete — no new winner |
+| [V1a.5](v1/v1a5/) | Can distant reliable-span geometry repair recovered remote slices? | Validation complete — stopped before MedSAM |
+| [V1a.6](v1/v1a6/) | Can a recovered satellite stabilize its own noisy native geometry? | **Validation development** |
 
 ## V1a.2 findings
 
@@ -156,11 +158,48 @@ no GT-negative slices, yet those slices add only 650 TP pixels and 19,374 FP
 pixels; their median slice Dice is `0.0`.
 
 Therefore V1a.4 does **not** replace frozen V1a.3-B B1. No V1a.4 secondary-test
-run is performed, and no post-Stage-2 decoder tuning is allowed. The next
-research bottleneck is geometry/prompt quality on recovered or low-confidence
-slices, not further widening of case-level presence post-processing.
+run is performed, and no post-Stage-2 decoder tuning is allowed.
 
-See [V1a.4 protocol and compact results](v1/v1a4/).
+## Completed V1a.5 validation study
+
+V1a.5 tested whether geometry for the R2b remote satellite could be borrowed
+from the distant frozen-B1 span. The recovered validation subset contains 25
+GT-positive side-slices, all from `case_00067 / left`, slices `19..43`.
+
+The nearest B1 anchors are 49–73 slices away (median 61). As a result, nearest
+anchor propagation and five-anchor linear extrapolation both collapse recovered
+box overlap:
+
+| Candidate | Recovered IoU mean | Center-error median | Expanded coverage |
+|---|---:|---:|---:|
+| G1 native R2b | **0.03285** | 5.2500 | **0.1957** |
+| G2 nearest B1 anchor | 0.00000 | 7.3611 | 0.0000 |
+| G3 five-anchor linear trend | 0.00000 | **4.6887** | 0.0000 |
+
+Neither G2 nor G3 passes the predeclared geometry gate, so V1a.5 stops before
+MedSAM and no secondary-test evaluation is run. The key conclusion is that the
+remote satellite cannot obtain valid geometry by copying or extrapolating from
+the distant dominant span.
+
+## Current development: V1a.6
+
+V1a.6 keeps the exact R2b presence mask and tests whether the remote satellite can
+stabilize its **own** noisy native box predictions. Stage 1 is predeclared as:
+
+```text
+G1 = R2b native geometry
+G4 = satellite-wide median geometry
+G5 = within-satellite rolling median, window 5
+G6 = MAD-filtered robust linear geometry trend
+```
+
+G4/G5/G6 may modify only R2b-recovered side-slices. Presence and all
+non-recovered boxes remain frozen. A method advances only if it improves both
+recovered mean tight-box IoU and recovered median normalized center error versus
+G1. Stage 1 uses validation geometry/prompt metrics only; MedSAM and the exposed
+27-case split remain closed.
+
+See [V1a.6 design and runbook](v1/v1a6/).
 
 ## Repository structure
 
@@ -174,7 +213,9 @@ See [V1a.4 protocol and compact results](v1/v1a4/).
     ├── v1a2b/
     ├── v1a3/
     ├── v1a3b/
-    └── v1a4/
+    ├── v1a4/
+    ├── v1a5/
+    └── v1a6/
 ```
 
 ## Reproducibility
