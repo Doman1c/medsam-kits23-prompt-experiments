@@ -1,0 +1,87 @@
+{
+  "experiment": "V1a.4",
+  "stage": "stage2_validation_negative_aware_medsam",
+  "test_set_used": false,
+  "bundle_integrity": {
+    "listed_files": 26,
+    "size_and_sha256_verified": true,
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "selection_rule": "Rank by case-volume Dice, then all-slice mean Dice, then lower negative false-positive mask rate.",
+  "ranking": [
+    "v1a3b_frozen_b1",
+    "stage1_fixed_local_hysteresis",
+    "r2b_remote_satellite_1",
+    "r3_hybrid_1"
+  ],
+  "candidates": {
+    "v1a3b_frozen_b1": {
+      "presence_recall": 0.9502325581395349,
+      "presence_fpr": 0.11930712339431686,
+      "all_slice_dice": 0.8356108866646067,
+      "positive_slice_dice": 0.8101802799089527,
+      "positive_slice_detection_recall": 0.9338118022328549,
+      "negative_specificity": 0.8489539748953975,
+      "case_volume_dice": 0.8547517823211155,
+      "total_tp_pixels": 5643121,
+      "total_fp_pixels": 900945,
+      "total_fn_pixels": 504767
+    },
+    "stage1_fixed_local_hysteresis": {
+      "presence_recall": 0.9567441860465116,
+      "presence_fpr": 0.13409887115609265,
+      "all_slice_dice": 0.8297914058805044,
+      "positive_slice_dice": 0.8140030965140014,
+      "positive_slice_detection_recall": 0.9354066985645934,
+      "negative_specificity": 0.8380753138075314,
+      "case_volume_dice": 0.8544689155777355,
+      "total_tp_pixels": 5654010,
+      "total_fp_pixels": 955070,
+      "total_fn_pixels": 493878
+    },
+    "r2b_remote_satellite_1": {
+      "presence_recall": 0.9618604651162791,
+      "presence_fpr": 0.11930712339431686,
+      "all_slice_dice": 0.8357906301316448,
+      "positive_slice_dice": 0.8107025966504893,
+      "positive_slice_detection_recall": 0.9513556618819776,
+      "negative_specificity": 0.8489539748953975,
+      "case_volume_dice": 0.853934530596103,
+      "total_tp_pixels": 5643771,
+      "total_fp_pixels": 920319,
+      "total_fn_pixels": 504117
+    },
+    "r3_hybrid_1": {
+      "presence_recall": 0.9683720930232558,
+      "presence_fpr": 0.13409887115609265,
+      "all_slice_dice": 0.8299711493475423,
+      "positive_slice_dice": 0.8145254132555378,
+      "positive_slice_detection_recall": 0.9529505582137161,
+      "negative_specificity": 0.8380753138075314,
+      "case_volume_dice": 0.8536524427297862,
+      "total_tp_pixels": 5654660,
+      "total_fp_pixels": 974444,
+      "total_fn_pixels": 493228
+    }
+  },
+  "r2b_diagnostic": {
+    "combined_slices_newly_prompted_vs_frozen_b1": 22,
+    "newly_prompted_gt_positive_slices": 22,
+    "newly_prompted_gt_negative_slices": 0,
+    "all_newly_prompted_slices_case_id": "case_00067",
+    "additional_tp_pixels": 650,
+    "additional_fp_pixels": 19374,
+    "reduced_fn_pixels": 650,
+    "mean_dice_on_newly_prompted_slices": 0.02977205426758419,
+    "median_dice_on_newly_prompted_slices": 0.0,
+    "case_00067_case_volume_dice_delta": -0.01634503450025215,
+    "mean_case_volume_dice_delta": -0.0008172517250126076
+  },
+  "interpretation": {
+    "presence_result": "Remote-satellite recovery successfully passes the locked presence gate without increasing validation side-level FPR.",
+    "segmentation_result": "The recovered remote slices do not carry reliable frozen box geometry for MedSAM: the 22 newly prompted GT-positive slices add only 650 TP pixels but 19374 FP pixels, with median Dice 0.",
+    "final_validation_decision": "No V1a.4 recovery decoder replaces frozen V1a.3-B B1 under the predeclared Stage-2 ranking rule. V1a.4 stops after validation; no secondary-test evaluation is warranted and no post-Stage-2 decoder tuning is allowed."
+  }
+}
