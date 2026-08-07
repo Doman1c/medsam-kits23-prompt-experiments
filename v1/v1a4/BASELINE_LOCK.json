@@ -31,6 +31,40 @@
     "maximum_presence_fpr": 0.15,
     "rationale": "Recover approximately the locked B0 validation recall while retaining a material fraction of V1a.3-B false-positive suppression. These thresholds are defined from validation baselines, not from the secondary test."
   },
+  "stage1": {
+    "completed": true,
+    "false_negative_slices": 107,
+    "false_negative_within_16_slices": 47,
+    "dominant_failure_case_side": {
+      "case_id": "case_00067",
+      "side": "left",
+      "false_negative_slices": 76,
+      "maximum_distance_to_seed": 76
+    },
+    "fixed_local_hysteresis_for_stage1b": {
+      "left_recovery_threshold": 0.0005,
+      "right_recovery_threshold": 0.0025,
+      "max_extension": 6,
+      "bridge_gap": 2,
+      "positive_recall": 0.9567441860465116,
+      "left_positive_recall": 0.9317988064791134,
+      "right_positive_recall": 0.9866939611054247,
+      "false_positive_rate": 0.13409887115609265
+    }
+  },
+  "stage1b": {
+    "allowed_families": [
+      "remote_satellite",
+      "hybrid"
+    ],
+    "satellite_max_distances": [20, 24, 32, 48, 64, 96],
+    "satellite_evidence_ratios": [0.05, 0.1, 0.2, 0.35, 0.5, 0.75],
+    "satellite_min_lengths": [1, 2, 3, 5, 8],
+    "max_satellites": 1,
+    "local_hysteresis_re_sweep_allowed": false,
+    "medsam_allowed_before_presence_gate": false,
+    "test_access_allowed": false
+  },
   "development_policy": {
     "split": "validation",
     "expected_cases": 20,
