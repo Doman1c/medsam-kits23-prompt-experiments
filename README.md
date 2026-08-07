@@ -1,205 +1,146 @@
 # MedSAM Automatic Prompt Generation on KiTS23
 
 This repository studies a lightweight, modular, and interpretable automatic
-spatial-prompt generator for frozen MedSAM on the KiTS23 kidney CT dataset.
-The prompt model predicts bilateral kidney presence and bounding boxes from
-2.5D CT input; MedSAM itself remains frozen.
+spatial-prompt generator for **frozen MedSAM** on KiTS23 kidney CT.
 
 ```text
-2.5D CT slices
-    -> bilateral presence / center / size prediction
-    -> calibrated spatial prompts
-    -> frozen MedSAM
-    -> kidney segmentation
+2.5D CT
+  -> bilateral kidney presence
+  -> bilateral box geometry
+  -> case-level prompt decoding
+  -> frozen MedSAM
+  -> kidney segmentation
 ```
 
-## Research objective
+## Project status
 
-The project asks two related questions:
+The **image-only V1a mainline is frozen after V1a.6**. The project no longer
+continues with V1a.7-style post-hoc geometry or threshold patches.
 
-1. Can a compact prompt generator replace manually supplied MedSAM boxes?
-2. Which errors dominate the automatic system: presence decisions, box center,
-   box size, or center-size interaction?
+The final frozen robust operating point is **V1a.3-B B1**, using the V1a.3-A
+epoch-18 EMA prompt network plus a case-level single-span presence decoder.
+V1a.4–V1a.6 remain important controlled failure-analysis experiments, but none
+replaces the frozen B1 system.
 
-Development follows controlled validation-only ablations. Test/secondary-test
-results are not used to select checkpoints, thresholds, smoothing, max-gap,
-expansion, samplers, loss variants, or later decoder parameters.
+For the full research narrative, see:
 
-## Experiment versions
+- [V1a mainline synthesis](v1/V1A_MAINLINE_SYNTHESIS.md)
+- [V1a final lock](v1/V1A_FINAL_LOCK.json)
+- [Comparable V1a ablation table](v1/results/v1a_mainline_ablation.csv)
+
+## Final frozen V1a operating point
+
+```text
+prompt network:
+  source            = V1a.3-A
+  checkpoint         = epoch 18 EMA
+  checkpoint SHA256  = f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2
+
+case-level decoder:
+  source            = V1a.3-B B1
+  mode              = single_span
+  left threshold    = 0.0035
+  right threshold   = 0.0400
+  baseline max gap  = 4
+  boundary pad      = 1
+
+MedSAM:
+  frozen            = true
+  expansion scale   = 1.20
+  target label      = 1
+```
+
+Validation metrics:
+
+| Metric | Frozen B1 |
+|---|---:|
+| Positive-slice Dice | 0.810180 |
+| All-slice Dice | 0.835611 |
+| Case-volume Dice | 0.854752 |
+| Negative specificity | 0.848954 |
+| Positive-slice detection recall | 0.933812 |
+
+A useful nuance is that V1a.2-A retains the highest historical validation
+case-volume mean (`0.855560`). Frozen B1 is kept as the final robust operating
+point because it raises all-slice Dice from `0.766569` to `0.835611` and negative
+specificity from `0.744351` to `0.848954`, with only a small case-volume change.
+
+## Experiment map
 
 | Version | Main question | Status |
 |---|---|---|
-| [V0](v0/) | Which MedSAM prompt combinations work best? | Complete |
-| [V0.5](v0.5/) | How robust is MedSAM to prompt degradation? | Complete |
-| [V1a.1](v1/v1a1/) | Can a 2.5D dual-kidney network generate automatic boxes? | Frozen test complete |
-| [V1a.2-A](v1/v1a2/) | Does predicted-center size supervision repair train-inference mismatch? | Validation complete |
-| [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
-| [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
-| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | Frozen test complete |
-| [V1a.3-B](v1/v1a3b/) | Can case-level single-span decoding suppress detached presence islands? | Secondary evaluation complete |
-| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | Validation complete — no new winner |
-| [V1a.5](v1/v1a5/) | Can distant reliable-span geometry repair recovered remote slices? | Validation complete — stopped before MedSAM |
-| [V1a.6](v1/v1a6/) | Can a recovered satellite stabilize its own noisy native geometry? | **Validation development** |
+| [V0](v0/) | Which frozen-MedSAM prompt formulation is strongest? | Complete |
+| [V0.5](v0.5/) | How robust is MedSAM to imperfect boxes? | Complete |
+| [V1a.1](v1/v1a1/) | Can a 2.5D dual-kidney model generate automatic boxes? | Frozen evaluation complete |
+| [V1a.2-A](v1/v1a2/) | Can predicted-center size supervision repair train/inference mismatch? | Validation complete |
+| [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision improve box geometry? | Validation complete |
+| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence? | Frozen model-specific evaluation complete |
+| [V1a.3-B](v1/v1a3b/) | Can case-level z continuity suppress detached false positives? | Final frozen image-only operating point |
+| [V1a.4](v1/v1a4/) | Can remote presence recovery regain over-pruned positives? | Validation complete — no new winner |
+| [V1a.5](v1/v1a5/) | Can geometry be propagated from the distant dominant span? | Validation complete — stopped before MedSAM |
+| [V1a.6](v1/v1a6/) | Can the recovered satellite stabilize its own geometry? | Validation complete — no new winner |
 
-## V1a.2 findings
+## Main findings
 
-### Negative-aware all-slice validation
+### V0 / V0.5: box prompting is the correct foundation
 
-The follow-up evaluation contains 3,644 validation slices, including 2,390
-fully negative slices.
+Representative V0 random-100 MedSAM results:
 
-| Operating point | All-slice Dice | Case-volume Dice | Negative specificity |
-|---|---:|---:|---:|
-| V1a.1 locked | 0.3097 | 0.7112 | 0.0464 |
-| V1a.2-A locked | 0.7666 | **0.8556** | 0.7444 |
-| V1a.2-B epoch 4 prompt-best | 0.3060 | 0.7534 | 0.0335 |
-| V1a.2-B epoch 14 calibrated | **0.7725** | 0.8508 | **0.7598** |
-
-V1a.2-B is the strongest geometry design, while V1a.2-A remains slightly
-better in validation case-volume Dice.
-
-### Fixed-scale geometry decomposition
-
-All models were compared with ground-truth presence and expansion fixed at
-`1.20`.
-
-| Model | M0 auto box | Joint box gap | Center-size interaction |
-|---|---:|---:|---:|
-| V1a.1 | 0.8361 | 0.0347 | 0.0102 |
-| V1a.2-A | 0.8406 | 0.0302 | 0.0128 |
-| V1a.2-B | **0.8416** | **0.0292** | **0.0069** |
-
-## Completed V1a.3-A study
-
-V1a.3-A retained the V1a.2-B architecture and optimized loss and changed only
-the training sampler.
-
-Validation selected epoch 18 with EMA weights, smooth presence, `max_gap=2`,
-left/right thresholds `0.005/0.005`, and expansion `1.20`.
-
-| Metric | V1a.3-A validation |
+| Prompt mode | Mean Dice |
 |---|---:|
-| Positive-slice Dice | 0.8067 |
-| All-slice Dice | 0.7760 |
-| Case-volume Dice | 0.8479 |
-| Negative specificity | 0.7598 |
+| box_mask | 0.9460 |
+| box | 0.9414 |
+| all | 0.9272 |
+| box_pos | 0.8475 |
+| box_pos_neg | 0.6240 |
 
-The fixed-presence M0 geometry score was `0.8416`, showing that targeted
-sampling did not collapse V1a.2-B box geometry.
+V0.5 shows that box expansion around `1.10–1.25` is generally safe, small
+center/corner errors are often tolerable, large errors cause sharp degradation,
+and very small edge slices remain difficult.
 
-The 27-case frozen test gave positive-slice Dice `0.7239`, all-slice Dice
-`0.7475`, case-volume Dice `0.7996`, and negative specificity `0.7603`.
+### V1a.1–V1a.2: geometry is important, but positive-only metrics are unsafe
 
-## Completed V1a.3-B study
+V1a.1's frozen positive-slice Dice is `0.7628` versus oracle-scaled `0.8713`.
+Oracle-gap decomposition attributes most of the early gap to automatic box
+localization/size.
 
-V1a.3-B froze the V1a.3-A epoch-18 EMA network and changed only the case-level
-presence decoder. Validation selected a simple single-span decoder:
+V1a.2-A and V1a.2-B improve geometry, but negative-aware evaluation reveals that
+a positive-slice prompt winner can be catastrophically poor on fully negative
+slices. This motivates presence-aware model selection.
 
-```text
-left threshold      = 0.0035
-right threshold     = 0.0400
-baseline max gap    = 4
-boundary pad        = 1
-expansion scale     = 1.20
-```
+### V1a.3: case-level z continuity provides the largest robustness gain
 
-Validation improved from B0 to B1 as follows:
+Targeted negative sampling helps but does not fully solve presence generalization.
+The V1a.3-B single-span decoder then suppresses detached false-positive islands
+without retraining, producing the final robust operating point.
 
-| Metric | B0 | B1 frozen |
-|---|---:|---:|
-| All-slice Dice | 0.7760 | 0.8356 |
-| Positive-slice Dice | 0.8067 | 0.8102 |
-| Negative specificity | 0.7598 | 0.8490 |
-| Case-volume Dice | 0.8479 | 0.8548 |
+On the already-exposed 27-case split, the locked B1 secondary evaluation raises
+all-slice Dice and negative specificity but reduces positive-slice recall. This
+trade-off motivates the controlled V1a.4–V1a.6 recovery studies.
 
-On the already-exposed 27-case split, the locked B1 secondary evaluation kept
-the false-positive benefit but over-pruned positive slices:
+### V1a.4–V1a.6: recovering presence is not enough without usable geometry
 
-| Metric | B0 | B1 frozen |
-|---|---:|---:|
-| All-slice Dice | 0.7475 | 0.8009 |
-| Positive-slice Dice | 0.7234 | 0.6827 |
-| Positive-slice detection recall | 0.9715 | 0.8636 |
-| Negative specificity | 0.7603 | 0.8630 |
-| Case-volume Dice | 0.7996 | 0.8016 |
+V1a.4 successfully recovers true-positive remote slices without increasing
+presence FPR, but their native boxes do not help MedSAM. V1a.5 shows that geometry
+cannot be borrowed from reliable boxes 49–73 slices away. V1a.6 improves some
+prompt-level geometry metrics using satellite-local robust trends, but downstream
+MedSAM still does not improve.
 
-V1a.3-B is therefore retained as a conservative operating point with strong
-negative-slice suppression rather than an unqualified replacement for B0.
+This closes the image-only patching sequence and establishes an important final
+observation: **better prompt-level box metrics do not necessarily imply better
+MedSAM segmentation**.
 
-## Completed V1a.4 validation study
+## Evaluation protocol and caveat
 
-V1a.4 kept the V1a.3-A epoch-18 EMA network and the V1a.3-B frozen single-span
-seed. It tested whether missed positive slices could be recovered without giving
-back the false-positive suppression.
+The learned pipeline uses 147 selected KiTS23 cases with a fixed 100 train / 20
+validation / 27 test split. Development is validation-only; MedSAM remains frozen.
+Later studies include fully negative slices and use negative-aware system metrics.
 
-Stage 1 showed that the failure was not purely local: 107 frozen-B1 false-negative
-side-slices were found, and one left case-side (`case_00067`) contributed 76 of
-them, extending up to 76 slices before the selected dominant span.
-
-Stage 1b therefore tested a strongly supported remote satellite segment. It
-successfully crossed the locked presence gate. The cleanest R2b point raised
-presence recall from `0.9502` to `0.9619` while keeping FPR fixed at `0.1193`.
-
-Negative-aware frozen-MedSAM validation then compared four candidates under the
-predeclared ranking rule: case-volume Dice, then all-slice Dice, then lower
-negative FP-mask rate.
-
-| Candidate | All-slice Dice | Positive Dice | Detection recall | Negative specificity | Case-volume Dice |
-|---|---:|---:|---:|---:|---:|
-| **Frozen V1a.3-B B1** | 0.83561 | 0.81018 | 0.93381 | **0.84895** | **0.85475** |
-| Fixed local hysteresis | 0.82979 | 0.81400 | 0.93541 | 0.83808 | 0.85447 |
-| R2b remote satellite | **0.83579** | 0.81070 | **0.95136** | **0.84895** | 0.85393 |
-| R3 hybrid | 0.82997 | **0.81453** | **0.95295** | 0.83808 | 0.85365 |
-
-R2b demonstrates that presence recovery itself works, but the recovered remote
-slices do not have sufficiently reliable frozen box geometry. Relative to frozen
-B1, R2b newly prompts 22 GT-positive combined slices (all from `case_00067`) and
-no GT-negative slices, yet those slices add only 650 TP pixels and 19,374 FP
-pixels; their median slice Dice is `0.0`.
-
-Therefore V1a.4 does **not** replace frozen V1a.3-B B1. No V1a.4 secondary-test
-run is performed, and no post-Stage-2 decoder tuning is allowed.
-
-## Completed V1a.5 validation study
-
-V1a.5 tested whether geometry for the R2b remote satellite could be borrowed
-from the distant frozen-B1 span. The recovered validation subset contains 25
-GT-positive side-slices, all from `case_00067 / left`, slices `19..43`.
-
-The nearest B1 anchors are 49–73 slices away (median 61). As a result, nearest
-anchor propagation and five-anchor linear extrapolation both collapse recovered
-box overlap:
-
-| Candidate | Recovered IoU mean | Center-error median | Expanded coverage |
-|---|---:|---:|---:|
-| G1 native R2b | **0.03285** | 5.2500 | **0.1957** |
-| G2 nearest B1 anchor | 0.00000 | 7.3611 | 0.0000 |
-| G3 five-anchor linear trend | 0.00000 | **4.6887** | 0.0000 |
-
-Neither G2 nor G3 passes the predeclared geometry gate, so V1a.5 stops before
-MedSAM and no secondary-test evaluation is run. The key conclusion is that the
-remote satellite cannot obtain valid geometry by copying or extrapolating from
-the distant dominant span.
-
-## Current development: V1a.6
-
-V1a.6 keeps the exact R2b presence mask and tests whether the remote satellite can
-stabilize its **own** noisy native box predictions. Stage 1 is predeclared as:
-
-```text
-G1 = R2b native geometry
-G4 = satellite-wide median geometry
-G5 = within-satellite rolling median, window 5
-G6 = MAD-filtered robust linear geometry trend
-```
-
-G4/G5/G6 may modify only R2b-recovered side-slices. Presence and all
-non-recovered boxes remain frozen. A method advances only if it improves both
-recovered mean tight-box IoU and recovered median normalized center error versus
-G1. Stage 1 uses validation geometry/prompt metrics only; MedSAM and the exposed
-27-case split remain closed.
-
-See [V1a.6 design and runbook](v1/v1a6/).
+The 27-case split was exposed earlier in the project. V1a.3-B therefore uses a
+locked **secondary retrospective evaluation** on the same split, not a new
+project-level pristine holdout. A publication-grade final generalization claim
+should use a previously unused KiTS23 holdout or an external dataset after the
+full method is frozen.
 
 ## Repository structure
 
@@ -208,6 +149,9 @@ See [V1a.6 design and runbook](v1/v1a6/).
 ├── v0/
 ├── v0.5/
 └── v1/
+    ├── V1A_MAINLINE_SYNTHESIS.md
+    ├── V1A_FINAL_LOCK.json
+    ├── results/v1a_mainline_ablation.csv
     ├── v1a1/
     ├── v1a2/
     ├── v1a2b/
@@ -218,9 +162,13 @@ See [V1a.6 design and runbook](v1/v1a6/).
     └── v1a6/
 ```
 
-## Reproducibility
-
 Git contains source code, locked configurations, compact comparison tables, and
-summary documents. The repository intentionally excludes notebooks used only for
-Colab recovery, model checkpoints, MedSAM weights, raw KiTS23 volumes, processed
-NPZ slices, and large per-slice prediction/sweep tables.
+summary documents. Model checkpoints, MedSAM weights, processed NPZ slices, raw
+KiTS23 volumes, and large per-slice prediction tables are intentionally excluded.
+
+## Next research phase
+
+The next phase should be a genuinely distinct question rather than another V1a
+patch. The preferred direction is **V1b language/semantic-guided spatial
+prompting**, with learned cross-slice geometry as a separate alternative research
+branch if pursued later.
