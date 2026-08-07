@@ -1,34 +1,17 @@
-# V1a.4 — Recall recovery on top of frozen V1a.3-B
+# V1a.4 — Recall recovery after hard single-span pruning
 
-V1a.4 is a validation-only post-processing experiment. It does not retrain the
-prompt network and does not change geometry or MedSAM. It starts from the frozen
-V1a.3-B single-span decoder and tests narrowly defined recovery mechanisms.
+V1a.4 is a validation-only post-processing study built on the frozen V1a.3-B
+single-span decoder. It does not retrain the prompt network and does not change
+box geometry, MedSAM, target label, or expansion.
 
-```text
-R0 frozen B1
-  single dominant span
-
-R1 local hysteresis boundary recovery
-  dominant span -> lower-threshold bounded boundary extension
-
-R2 local satellite recovery
-  dominant span -> retain at most one nearby supported secondary segment
-
-R2b remote satellite recovery
-  dominant span -> retain at most one strongly supported farther segment
-
-R3 hybrid
-  fixed Stage-1 local hysteresis + R2b remote satellite
-```
-
-## Frozen baseline
+## Frozen upstream
 
 ```text
-upstream checkpoint = V1a.3-A epoch 18 EMA
+V1a.3-B merge       = 36c260096f733fc54e4db0819cc04527d021eff6
+checkpoint          = V1a.3-A epoch 18 EMA
 checkpoint SHA256   = f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2
 
-V1a.3-B seed:
-mode                = single_span
+frozen B1 seed:
 left threshold      = 0.0035
 right threshold     = 0.0400
 baseline max gap    = 4
@@ -36,12 +19,12 @@ boundary pad        = 1
 expansion scale     = 1.20
 ```
 
-The exact baseline and development rules are stored in `BASELINE_LOCK.json`.
+The exact lock is stored in `BASELINE_LOCK.json`.
 
 ## Locked validation gate
 
-V1a.4 uses only the 20-case / 3,644-row validation split for decoder selection.
-The gate is unchanged throughout development:
+All V1a.4 decoder development uses only the 20-case / 3,644-row validation
+split.
 
 ```text
 overall recall >= 0.96
@@ -50,9 +33,18 @@ right recall   >= 0.97
 FPR             <= 0.15
 ```
 
-No MedSAM or test access is allowed before a presence decoder passes this gate.
+No MedSAM is run before this presence-level gate is passed. The already-exposed
+secondary test is never used for V1a.4 parameter selection.
 
-## Stage 1 result
+## Stage 1 — local recovery
+
+Stage 1 tested:
+
+```text
+R0 frozen B1
+R1 bounded lower-threshold hysteresis around the dominant span
+R2 one nearby threshold-derived satellite segment
+```
 
 Frozen B1 validation presence:
 
@@ -63,20 +55,11 @@ Frozen B1 validation presence:
 | Right recall | 0.9775 |
 | FPR | 0.1193 |
 | Specificity | 0.8807 |
-| False-negative slices | 107 |
 
-The false-negative audit showed a long-range split-span failure mode:
-
-```text
-83 / 107 FN slices occur before the frozen seed
-24 / 107 occur after the seed
-85 / 107 are left-side misses
-22 / 107 are right-side misses
-47 / 107 are within 16 slices of the frozen seed
-```
-
-One validation case-side (`case_00067`, left) accounts for 76 FN slices and the
-misses extend up to 76 slices before the dominant seed.
+The audit found 107 false-negative side-slices. Eighty-three occur before the
+frozen seed, 85 are left-side misses, and only 47/107 lie within 16 slices of the
+seed. One validation case-side (`case_00067`, left) accounts for 76 misses and
+extends up to 76 slices before the selected dominant span.
 
 The best local hysteresis point under `FPR <= 0.15` was:
 
@@ -92,115 +75,82 @@ right recall   = 0.9867
 FPR            = 0.1341
 ```
 
-Stage 1 swept 738 configurations and none met the full gate. Nearby satellite
-recovery capped at 16 slices did not improve recall. Local-only recovery was
-therefore rejected as sufficient.
+It helps but does not pass the full gate. The original nearby-satellite search,
+capped at 16 slices, does not improve recall.
 
-## Stage 1b result
+## Stage 1b — remote satellite recovery
 
-Stage 1b widened only the satellite support range and kept the Stage-1 local
-hysteresis rule frozen. It evaluated 360 validation configurations:
+Stage 1b freezes the local R1 rule above and adds only one new degree of freedom:
+a strongly supported farther satellite segment.
 
 ```text
-feasible total            = 40
-remote_satellite feasible = 20
-hybrid feasible           = 20
+R2b remote satellite:
+  frozen B1 + at most one supported satellite
+
+R3 hybrid:
+  fixed Stage-1 local hysteresis + R2b
 ```
 
-The recovery appears only once the maximum satellite distance reaches 64 slices;
-searches capped at 48 slices behave like the corresponding references. This
-matches the Stage-1 topology audit.
+The 360-config validation sweep produced 40 feasible points: 20 R2b and 20 R3.
+The recovery appears only once maximum satellite distance reaches 64 slices,
+matching the Stage-1 topology audit.
 
-Two Stage-2 finalists are fixed before MedSAM:
+Pre-MedSAM finalists:
 
-| Candidate | Recall | Left recall | Right recall | FPR | Prompt success | Continuous |
+| Candidate | Recall | Left | Right | FPR | Prompt success | Continuous |
 |---|---:|---:|---:|---:|---:|---:|
 | Frozen B1 | 0.9502 | 0.9275 | 0.9775 | 0.1193 | 0.8233 | 0.7787 |
 | Fixed local hysteresis | 0.9567 | 0.9318 | 0.9867 | 0.1341 | 0.8274 | 0.7817 |
-| **R2b remote satellite** | **0.9619** | **0.9488** | 0.9775 | **0.1193** | 0.8233 | 0.7819 |
-| **R3 hybrid** | **0.9684** | **0.9531** | **0.9867** | 0.1341 | **0.8274** | **0.7849** |
+| R2b remote satellite | 0.9619 | 0.9488 | 0.9775 | **0.1193** | 0.8233 | 0.7819 |
+| R3 hybrid | **0.9684** | **0.9531** | **0.9867** | 0.1341 | **0.8274** | **0.7849** |
 
-R2b is especially important because it crosses the recall gate while preserving
-frozen-B1 FPR exactly on validation. R3 gives the highest recall and prompt-level
-continuous score while retaining the fixed local-hysteresis FPR.
+`STAGE2_LOCK.json` freezes these exact four candidates before MedSAM evaluation.
 
-Compact Stage-1/Stage-1b findings are stored under `results/`. The exact
-four-candidate Stage-2 set is frozen in `STAGE2_LOCK.json` before MedSAM.
+## Stage 2 — negative-aware frozen MedSAM
 
-## Stage 2 — negative-aware MedSAM validation
-
-Stage 2 compares exactly four predeclared candidates:
+The predeclared ranking rule is:
 
 ```text
-1. v1a3b_frozen_b1
-2. stage1_fixed_local_hysteresis
-3. r2b_remote_satellite_1
-4. r3_hybrid_1
+case-volume Dice
+-> all-slice mean Dice
+-> lower negative false-positive mask rate
 ```
 
-No MedSAM result is used to select these inputs.
+Results:
 
-If the current Colab runtime is already restored and Stage 1b has completed:
+| Candidate | All-slice Dice | Positive Dice | Detection recall | Negative specificity | Case-volume Dice |
+|---|---:|---:|---:|---:|---:|
+| **Frozen B1** | 0.83561 | 0.81018 | 0.93381 | **0.84895** | **0.85475** |
+| Fixed local hysteresis | 0.82979 | 0.81400 | 0.93541 | 0.83808 | 0.85447 |
+| R2b remote satellite | **0.83579** | 0.81070 | **0.95136** | **0.84895** | 0.85393 |
+| R3 hybrid | 0.82997 | **0.81453** | **0.95295** | 0.83808 | 0.85365 |
 
-```bash
-cd /content/medsam-kits23-prompt-experiments
-git fetch origin
-git checkout v1a4-recall-recovery
-git pull --ff-only origin v1a4-recall-recovery
+R2b cleanly improves presence/detection recall while preserving negative
+specificity. However, it does not improve case-volume Dice.
 
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/run_v1a4_stage2_medsam.sh
-```
+A paired slice diagnostic explains the mismatch. Relative to frozen B1, R2b
+newly prompts 22 combined GT-positive slices and zero GT-negative slices. All 22
+belong to `case_00067`. Those slices add only 650 TP pixels but 19,374 FP pixels;
+their mean Dice is `0.0298` and median Dice is `0.0`. The `case_00067`
+case-volume Dice decreases by about `0.01635`.
 
-Outputs:
+Therefore the remaining bottleneck is not simply presence. The network can
+identify additional remote positive slices, but the frozen center/size geometry
+on those recovered low-confidence slices is not reliable enough for MedSAM.
 
-```text
-/content/v1a1_work/v1a4_stage2_medsam/
-/content/drive/MyDrive/medsam-kits23/v1a4_results/stage2_medsam/
-```
+## Final decision
 
-Package the compact review bundle with:
+`FINAL_DECISION.json` freezes the V1a.4 conclusion:
 
-```bash
-python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/package_v1a4_stage2.py \
-  --root /content/v1a1_work/v1a4_stage2_medsam \
-  --output /content/v1a4_stage2_review.zip
-```
+- **no V1a.4 decoder replaces frozen V1a.3-B B1** under the predeclared Stage-2
+  ranking rule;
+- no V1a.4 secondary-test run is warranted;
+- no post-Stage-2 decoder tuning is allowed;
+- future work should target box/prompt geometry for recovered or low-confidence
+  slices rather than widen the presence decoder again.
 
-Do not open any test split after Stage 2. First freeze the validation winner and
-record the final V1a.4 interpretation.
+## Reproducibility
 
-## Fresh Colab recovery
-
-Mount Drive:
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-For the private repository, use the Colab Secret `GITHUB_TOKEN` for session-only
-Git authentication, then clone and restore:
-
-```bash
-rm -rf /content/medsam-kits23-prompt-experiments
-
-git clone -b v1a4-recall-recovery \
-  https://github.com/Doman1c/medsam-kits23-prompt-experiments.git \
-  /content/medsam-kits23-prompt-experiments
-
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/restore_v1a4_colab.sh
-```
-
-The restore script validates the frozen V1a.3-B ancestry, epoch-18 checkpoint,
-20-case validation split, processed data paths, MedSAM assets, and synthetic
-decoder gates.
-
-## Development rule
-
-The already-exposed V1a.3-B secondary test motivates the recall-recovery question
-only. It is not used for V1a.4 parameter selection. No test result may be used to
-change threshold, extension, satellite distance, evidence ratio, minimum length,
-decoder family, geometry, expansion, or checkpoint.
+Compact results are under `results/`. Git intentionally excludes notebooks,
+checkpoints, MedSAM weights, raw/processed KiTS23 data, NPZ files, and large
+per-slice prediction/sweep tables.
