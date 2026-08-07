@@ -21,11 +21,9 @@ The project asks two related questions:
 2. Which errors dominate the automatic system: presence decisions, box center,
    box size, or center-size interaction?
 
-Development follows controlled validation-only ablations. The original test
-split is not used to select new V1a.4 decoder parameters. Because that split was
-already exposed in earlier frozen evaluations, any later use is explicitly
-reported as a locked secondary evaluation rather than a pristine first-look
-estimate.
+Development follows controlled validation-only ablations. Test/secondary-test
+results are not used to select checkpoints, thresholds, smoothing, max-gap,
+expansion, samplers, loss variants, or later decoder parameters.
 
 ## Experiment versions
 
@@ -38,8 +36,8 @@ estimate.
 | [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
 | [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | Frozen test complete |
-| [V1a.3-B](v1/v1a3b/) | Can explicit case-level z-span decoding suppress residual presence islands without retraining? | **Complete** |
-| [V1a.4](v1/v1a4/) | Can local recovery restore recall without giving back V1a.3-B false-positive suppression? | **Validation in progress** |
+| [V1a.3-B](v1/v1a3b/) | Can case-level single-span decoding suppress detached presence islands? | Secondary evaluation complete |
+| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | **Validation development** |
 
 ## V1a.2 findings
 
@@ -72,76 +70,76 @@ All models were compared with ground-truth presence and expansion fixed at
 ## Completed V1a.3-A study
 
 V1a.3-A retained the V1a.2-B architecture and optimized loss and changed only
-the training sampler. Validation selected epoch 18 EMA with smooth presence,
-`max_gap=2`, left/right threshold `0.005/0.005`, and expansion `1.20`.
+the training sampler.
 
-| Metric | Validation | Frozen test |
-|---|---:|---:|
-| Positive-slice Dice | 0.8067 | 0.7239 |
-| All-slice Dice | 0.7760 | 0.7475 |
-| Case-volume Dice | 0.8479 | 0.7996 |
-| Negative specificity | 0.7598 | 0.7603 |
+Validation selected epoch 18 with EMA weights, smooth presence, `max_gap=2`,
+left/right thresholds `0.005/0.005`, and expansion `1.20`.
+
+| Metric | V1a.3-A validation |
+|---|---:|
+| Positive-slice Dice | 0.8067 |
+| All-slice Dice | 0.7760 |
+| Case-volume Dice | 0.8479 |
+| Negative specificity | 0.7598 |
 
 The fixed-presence M0 geometry score was `0.8416`, showing that targeted
 sampling did not collapse V1a.2-B box geometry.
 
+The 27-case frozen test gave positive-slice Dice `0.7239`, all-slice Dice
+`0.7475`, case-volume Dice `0.7996`, and negative specificity `0.7603`.
+
 ## Completed V1a.3-B study
 
-V1a.3-B froze the V1a.3-A epoch-18 EMA network and changed only case-level
-presence decoding. Validation selected a simple dominant single-span decoder:
+V1a.3-B froze the V1a.3-A epoch-18 EMA network and changed only the case-level
+presence decoder. Validation selected a simple single-span decoder:
 
 ```text
 left threshold      = 0.0035
 right threshold     = 0.0400
 baseline max gap    = 4
 boundary pad        = 1
-expansion            = 1.20
+expansion scale     = 1.20
 ```
 
-### Validation
+Validation improved from B0 to B1 as follows:
 
-| Metric | V1a.3-A / B0 | V1a.3-B / B1 |
+| Metric | B0 | B1 frozen |
 |---|---:|---:|
-| All-slice Dice | 0.7760 | **0.8356** |
-| Positive-slice Dice | 0.8067 | **0.8102** |
-| Negative specificity | 0.7598 | **0.8490** |
-| Case-volume Dice | 0.8479 | **0.8548** |
+| All-slice Dice | 0.7760 | 0.8356 |
+| Positive-slice Dice | 0.8067 | 0.8102 |
+| Negative specificity | 0.7598 | 0.8490 |
+| Case-volume Dice | 0.8479 | 0.8548 |
 
-### Locked secondary evaluation
+On the already-exposed 27-case split, the locked B1 secondary evaluation kept
+the false-positive benefit but over-pruned positive slices:
 
-The original 27-case split had already been exposed before V1a.3-B, so these
-numbers are reported only as a locked secondary comparison.
-
-| Metric | B0 | Frozen B1 |
+| Metric | B0 | B1 frozen |
 |---|---:|---:|
-| All-slice Dice | 0.7475 | **0.8009** |
-| Positive-slice Dice | **0.7234** | 0.6827 |
-| Positive case-mean Dice | **0.7627** | 0.7587 |
-| Positive-slice detection recall | **0.9715** | 0.8636 |
-| Negative specificity | 0.7603 | **0.8630** |
-| Case-volume Dice | 0.7996 | **0.8016** |
+| All-slice Dice | 0.7475 | 0.8009 |
+| Positive-slice Dice | 0.7234 | 0.6827 |
+| Positive-slice detection recall | 0.9715 | 0.8636 |
+| Negative specificity | 0.7603 | 0.8630 |
+| Case-volume Dice | 0.7996 | 0.8016 |
 
-The z-span prior generalizes strongly for false-positive suppression and
-all-slice robustness, but the hard single-span constraint can over-prune true
-positive slices. V1a.3-B is therefore a conservative operating point rather
-than an unconditional replacement for B0.
+V1a.3-B is therefore retained as a conservative operating point with strong
+negative-slice suppression rather than an unqualified replacement for B0.
 
 ## Current development: V1a.4
 
-V1a.4 starts from the frozen V1a.3-B B1 configuration and asks whether recall
-can be recovered without returning to the detached false-positive islands that
-V1a.3-B removed.
+V1a.4 keeps the V1a.3-A epoch-18 EMA network and V1a.3-B frozen single-span seed.
+It tests whether missing positive slices can be recovered without giving back the
+false-positive suppression.
 
-The first controlled validation-only comparison is:
+Stage 1 audited 107 frozen-B1 false-negative side-slices. Only 47/107 lie within
+16 slices of the selected span. One left case-side contributes 76 FN slices
+extending up to 76 slices before the dominant seed. The best local hysteresis
+recovery improves overall recall from `0.9502` to `0.9567` at FPR `0.1341`, but
+does not meet the locked recall gate. A local satellite search capped at 16
+slices also does not improve recall.
 
-```text
-R0 frozen V1a.3-B B1
-R1 hysteresis boundary recovery
-R2 retain at most one nearby supported satellite segment
-```
-
-Stage 1 first audits where frozen-B1 false-negative slices lie relative to the
-predicted dominant span, then sweeps R1/R2 under a locked validation gate:
+Stage 1b therefore tests one strongly supported **remote satellite** segment,
+alone and combined with the fixed Stage-1 local hysteresis rule. The original
+gate remains unchanged:
 
 ```text
 overall recall >= 0.96
@@ -150,8 +148,10 @@ right recall   >= 0.97
 FPR             <= 0.15
 ```
 
-No MedSAM or test split is used in the first V1a.4 stage. See
-[V1a.4 design and runbook](v1/v1a4/).
+No MedSAM or test access is allowed until at least one Stage-1b decoder passes
+this presence-level gate.
+
+See [V1a.4 design and runbook](v1/v1a4/).
 
 ## Repository structure
 
@@ -166,18 +166,11 @@ No MedSAM or test split is used in the first V1a.4 stage. See
     ├── v1a3/
     ├── v1a3b/
     └── v1a4/
-        ├── scripts/
-        ├── v1a4/
-        ├── BASELINE_LOCK.json
-        ├── DESIGN.md
-        └── README.md
 ```
 
 ## Reproducibility
 
 Git contains source code, locked configurations, compact comparison tables, and
-summary documents. The repository intentionally excludes notebooks used only
-for Colab recovery, model checkpoints, MedSAM weights, raw KiTS23 volumes,
-processed NPZ slices, and large per-slice prediction tables. Large immutable
-artifacts remain outside Git, while locked hashes are recorded in compact
-configuration/result files.
+summary documents. The repository intentionally excludes notebooks used only for
+Colab recovery, model checkpoints, MedSAM weights, raw KiTS23 volumes, processed
+NPZ slices, and large per-slice prediction/sweep tables.
