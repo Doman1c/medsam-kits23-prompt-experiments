@@ -14,6 +14,7 @@ source "$ENV_FILE"
 OUT="${OUT:-$WORK/v1a3b_validation}"
 DRIVE_OUT="${DRIVE_OUT:-/content/drive/MyDrive/medsam-kits23/v1a3b_results/validation}"
 RUN_MEDSAM="${RUN_MEDSAM:-0}"
+EXPECTED_V1A3A_CKPT_SHA256="f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2"
 
 PREDICT="$REPO/v1/v1a2b/scripts/predict_v1a2b.py"
 AUDIT="$REPO/v1/v1a3b/scripts/audit_presence_topology.py"
@@ -24,6 +25,26 @@ NEGATIVE_AWARE="$REPO/v1/v1a2b/followup_validation/tools/negative_aware_medsam_c
 for path in "$MANIFEST" "$V1A3A_CKPT" "$PREDICT" "$AUDIT" "$SWEEP" "$PROMPT_EVAL"; do
   [[ -e "$path" ]] || { echo "ERROR: missing $path" >&2; exit 1; }
 done
+
+ACTUAL_CKPT_SHA256="$(sha256sum "$V1A3A_CKPT" | awk '{print $1}')"
+if [[ "$ACTUAL_CKPT_SHA256" != "$EXPECTED_V1A3A_CKPT_SHA256" ]]; then
+  echo "ERROR: frozen V1a.3-A checkpoint SHA-256 mismatch" >&2
+  echo "Expected: $EXPECTED_V1A3A_CKPT_SHA256" >&2
+  echo "Actual:   $ACTUAL_CKPT_SHA256" >&2
+  exit 1
+fi
+
+python - <<PY
+from pathlib import Path
+import pandas as pd
+m = pd.read_csv('$MANIFEST', dtype={'case_id': str})
+val = m[m['split'].astype(str) == 'val']
+assert val['case_id'].nunique() == 20, val['case_id'].nunique()
+assert len(val) == 3644, len(val)
+missing = [p for p in val['npz_path'].astype(str) if not Path(p).is_file()]
+assert not missing, f'{len(missing)} validation NPZ files missing; examples={missing[:5]}'
+print({'v1a3b_gate': 'PASSED', 'validation_cases': 20, 'validation_rows': 3644, 'checkpoint_sha256': '$ACTUAL_CKPT_SHA256'})
+PY
 
 mkdir -p "$OUT" "$DRIVE_OUT"
 RAW="$OUT/val_epoch18_base_predictions.csv"
