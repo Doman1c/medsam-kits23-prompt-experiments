@@ -4,7 +4,7 @@ V1a.6 starts from the completed V1a.5 study. V1a.5 showed that geometry copied
 or extrapolated from the distant frozen-B1 span is not useful for the remote
 R2b satellite: the nearest B1 anchors are 49–73 slices away.
 
-V1a.6 therefore asks a narrower question:
+V1a.6 asks a narrower question:
 
 > Can the recovered satellite reconstruct a stable MedSAM box from its own
 > native per-slice geometry predictions, without borrowing geometry from the
@@ -43,7 +43,7 @@ construct a candidate box.
 Only R2b-recovered side-slices may change geometry. R2b presence and every
 non-recovered box remain frozen.
 
-## Stage-1 gate
+## Stage-1 gate and result
 
 A method may advance to negative-aware MedSAM only if, relative to G1, it:
 
@@ -51,14 +51,9 @@ A method may advance to negative-aware MedSAM only if, relative to G1, it:
 2. lowers recovered-slice median normalized center error;
 3. while passing all presence/non-recovered-geometry invariance checks.
 
-No MedSAM and no test/secondary-test split are used before this gate.
-
-## Stage-1 result
-
-The uploaded compact bundle passed all recorded size/SHA-256 checks. It contains
+The compact Stage-1 bundle passed all recorded size/SHA-256 checks and contained
 no MedSAM output, test result, checkpoint, NPZ data, or large prediction table.
-
-The recovered subset is again exactly 25 GT-positive side-slices from
+The recovered subset is exactly 25 GT-positive side-slices from
 `case_00067 / left`, slices `19..43`.
 
 | Candidate | Recovered mean IoU | Median center error | Expanded coverage | Prompt success | Advance? |
@@ -68,18 +63,13 @@ The recovered subset is again exactly 25 GT-positive side-slices from
 | G5 rolling median | 0.02993 | 4.9286 | 0.1991 | 0.000 | no |
 | **G6 robust linear** | **0.03606** | 4.1134 | **0.3363** | **0.040** | **yes** |
 
-G4 substantially reduces center error but collapses overlap. G5 is almost
-neutral. G6 is the only predeclared method that improves both gate metrics; it
-also raises recovered expanded coverage and creates one recovered prompt-success
-case. The effect is modest, so Stage 2 is needed to determine whether the box
-change improves the complete frozen-MedSAM system.
+G6 is the only predeclared method that improves both Stage-1 gate metrics. Its
+improvement is modest, so `STAGE2_LOCK.json` froze exactly G0/G1/G6 before any
+V1a.6 MedSAM output was opened.
 
-Compact Stage-1 results are stored under `results/`.
+## Stage 2 — negative-aware frozen MedSAM
 
-## Frozen Stage 2
-
-`STAGE2_LOCK.json` was written before opening any V1a.6 MedSAM result. Stage 2
-compares exactly three validation candidates:
+Stage 2 compares exactly:
 
 ```text
 G0 = frozen V1a.3-B B1 complete-system reference
@@ -87,7 +77,7 @@ G1 = frozen R2b + native geometry
 G6 = frozen R2b + robust satellite-local linear geometry
 ```
 
-Ranking remains:
+Predeclared ranking:
 
 ```text
 case-volume Dice
@@ -95,46 +85,67 @@ case-volume Dice
 -> negative-slice specificity
 ```
 
-No test or secondary-test split is accessed, and no parameter change is allowed
-after the Stage-2 MedSAM comparison begins.
+The uploaded Stage-2 review bundle lists 16 compact files; every recorded size
+and SHA-256 value was re-verified. The bundle contains no test/secondary-test
+result, checkpoint, NPZ data, or large prediction table.
 
-## Run Stage 2
+| Candidate | All-slice Dice | Positive Dice | Detection recall | Negative specificity | Case-volume Dice |
+|---|---:|---:|---:|---:|---:|
+| **G0 frozen B1** | 0.835611 | 0.810180 | 0.933812 | 0.848954 | **0.854752** |
+| G1 R2b native | **0.835791** | **0.810703** | 0.951356 | 0.848954 | 0.853935 |
+| G6 robust linear | 0.835782 | 0.810677 | **0.953748** | 0.848954 | 0.853540 |
 
-If the current Colab runtime still contains the V1a.6 Stage-1 outputs:
+G6 therefore does not become a complete-system winner. Relative to G1, it raises
+positive-slice detection recall slightly but lowers case-volume Dice and does not
+improve all-slice/positive Dice.
 
-```bash
-cd /content/medsam-kits23-prompt-experiments
+### Recovered-slice paired analysis
 
-git fetch origin
-git checkout -B \
-  v1a6-satellite-local-geometry \
-  origin/v1a6-satellite-local-geometry
-
-bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a6/scripts/run_v1a6_stage2_medsam.sh
-```
-
-Outputs:
+On the exact 25 recovered validation slices:
 
 ```text
-/content/v1a1_work/v1a6_stage2_medsam/
-/content/drive/MyDrive/medsam-kits23/v1a6_results/stage2_medsam/
+G1 mean Dice = 0.026199
+G6 mean Dice = 0.024921
+
+G1 TP pixels =    650
+G6 TP pixels =    608
+
+G1 FP pixels = 19,374
+G6 FP pixels = 28,509
 ```
 
-Package the compact review bundle:
+Paired outcome:
 
-```bash
-python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a6/scripts/package_v1a6_stage2.py \
-  --root /content/v1a1_work/v1a6_stage2_medsam \
-  --output /content/v1a6_stage2_review.zip
+```text
+6 slices improve
+6 slices worsen
+13 slices are unchanged
+mean Dice delta = -0.001279
+TP delta        = -42
+FP delta        = +9,135
+FN delta        = +42
 ```
 
-Upload `v1a6_stage2_review.zip` before any further system decision.
+The Stage-1 geometry improvement therefore does not translate into better frozen
+MedSAM segmentation. The robust trend can move boxes toward the target according
+to prompt-level metrics while simultaneously producing larger or less useful
+MedSAM regions.
 
-## Development rule
+## Final decision
 
-The already-exposed 27-case split is not used for V1a.6 selection. All V1a.6
-selection is validation-only. The satellite median, rolling-window size,
-MAD threshold, inlier count, and linear trend form are fixed and are not swept
-after seeing Stage-1 or Stage-2 results.
+`FINAL_DECISION.json` freezes the V1a.6 conclusion:
+
+- frozen V1a.3-B B1 remains the complete-system validation winner;
+- G6 does not replace G1 or G0;
+- no V1a.6 secondary-test run is warranted;
+- no post-Stage-2 tuning of MAD threshold, inlier count, trend form, expansion,
+  or recovered-satellite rule is allowed;
+- no V1a.7-style geometry-patching sequence is opened;
+- the image-only V1a mainline is frozen for project synthesis.
+
+The next project phase should either consolidate the image-only study into final
+ablations/results/figures or open a genuinely distinct research question, such as
+a learned cross-slice geometry model or language/semantic-guided spatial prompt
+generation.
+
+Compact results are stored under `results/`.
