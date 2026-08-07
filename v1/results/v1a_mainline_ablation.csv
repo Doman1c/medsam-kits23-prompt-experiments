@@ -1,0 +1,8 @@
+stage,operating_point,positive_slice_dice,all_slice_dice,case_volume_dice,negative_specificity,role,selected_as_final
+V1a.1,v1a1_locked,0.811517,0.309726,0.711219,0.046444,original learned baseline,false
+V1a.2-A,v1a2a_locked,0.808913,0.766569,0.855560,0.744351,historical best validation case-volume mean,false
+V1a.2-B,v1a2b_epoch14,0.797241,0.772487,0.850753,0.759833,strongest negative-aware V1a.2-B checkpoint,false
+V1a.3-A,v1a3a_epoch18_ema,0.806677,0.775953,0.847904,0.759833,targeted negative-sampling reference,false
+V1a.3-B,v1a3b_frozen_b1,0.810180,0.835611,0.854752,0.848954,final frozen robust operating point,true
+V1a.4,r2b_remote_satellite,0.810703,0.835791,0.853935,0.848954,presence-recall recovery ablation,false
+V1a.6,g6_robust_linear,0.810677,0.835782,0.853540,0.848954,satellite-local geometry ablation,false
