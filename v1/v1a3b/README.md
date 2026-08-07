@@ -1,103 +1,75 @@
 # V1a.3-B — Case-level kidney-span decoder
 
-V1a.3-B is a validation-only post-processing experiment built on the frozen
-V1a.3-A epoch-18 prompt network. It tests whether explicit z-axis continuity can
-repair residual presence false positives without retraining the prompt network
-or changing box geometry.
+V1a.3-B is a controlled post-processing experiment built on the frozen
+V1a.3-A epoch-18 EMA prompt network. It tests whether explicit z-axis continuity
+can reduce residual kidney-presence false positives without retraining the prompt
+network or changing box geometry.
 
-## What changes
+## Frozen upstream
 
-Unchanged:
+Unchanged throughout V1a.3-B:
 
 - V1a.3-A epoch-18 EMA checkpoint;
-- 2.5D input and bilateral heads;
-- V1a.2-B center/size/decoded-box geometry;
+- 2.5D input and bilateral presence/center/size heads;
+- V1a.2-B geometry design and loss;
 - frozen MedSAM;
-- KiTS23 case split;
-- expansion `1.20` during the decoder comparison.
+- KiTS23 split;
+- MedSAM expansion `1.20`.
 
-Changed:
+Only case-level presence decoding changes.
 
-- case-level presence decoding only.
+The upstream checkpoint SHA-256 is:
 
-The three controlled modes are:
+```text
+f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2
+```
+
+## Decoder families
 
 ```text
 B0 locked baseline
-  3-slice median smoothing -> threshold -> isolated-positive removal -> gap fill
+  3-slice median smoothing
+  -> threshold
+  -> isolated-positive removal
+  -> local gap fill
 
 B1 single span
-  B0 candidate segments -> retain the single strongest segment
+  B0 candidate segments
+  -> retain the single strongest segment
+  -> optional symmetric z-boundary padding
 
 B2 optimal span
-  smoothed probabilities -> threshold-relative log evidence
-  -> one contiguous span with bounded internal low-confidence gap
+  smoothed probabilities
+  -> threshold-relative log evidence
+  -> one optimal contiguous span with bounded internal low-confidence gaps
+  -> optional symmetric z-boundary padding
 ```
 
 ## Environment recovery
 
-The scripts intentionally replace the temporary recovery notebook. In a fresh
-Colab runtime, mount Drive first:
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-Because the repository is private, store a fresh GitHub token in Colab Secrets
-under `GITHUB_TOKEN` and configure session-only Git authentication without
-printing the token:
-
-```python
-from google.colab import userdata
-from pathlib import Path
-import os
-
-TOKEN = userdata.get("GITHUB_TOKEN")
-if not TOKEN:
-    raise RuntimeError("Missing Colab Secret: GITHUB_TOKEN")
-
-netrc = Path.home() / ".netrc"
-netrc.write_text(
-    "machine github.com\n"
-    "login x-access-token\n"
-    f"password {TOKEN}\n",
-    encoding="utf-8",
-)
-os.chmod(netrc, 0o600)
-print("GitHub authentication configured for this runtime.")
-```
-
-Then clone this branch and restore the experiment assets:
+In a fresh Colab runtime, mount Drive and configure private GitHub access through
+the `GITHUB_TOKEN` Colab Secret. Then:
 
 ```bash
 git clone -b v1a3b-span-decoder \
   https://github.com/Doman1c/medsam-kits23-prompt-experiments.git \
   /content/medsam-kits23-prompt-experiments
 
-bash /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/restore_v1a3b_colab.sh
+bash \
+  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/restore_v1a3b_colab.sh
 ```
 
-The recovery script:
+The restore script verifies the frozen V1a.3-A base, restores/repairs the
+manifest and processed NPZ paths, resolves epoch 18 and MedSAM assets, checks
+the 20-case / 3,644-row validation split, and writes:
 
-1. verifies that the repository descends from the frozen V1a.3-A merge;
-2. runs the synthetic span-decoder gate;
-3. restores the canonical manifest;
-4. reuses or extracts processed NPZ slices and repairs manifest paths;
-5. resolves V1a.3-A `epoch_018.pt` from Drive;
-6. restores MedSAM and `medsam_vit_b.pth`;
-7. checks only the 20-case / 3,644-row validation split;
-8. writes `/content/v1a1_work/v1a3b_env.sh`.
-
-## Stage 1 — topology audit and initial decoder sweep
-
-Run:
-
-```bash
-bash /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/run_v1a3b_validation.sh
+```text
+/content/v1a1_work/v1a3b_env.sh
 ```
 
-Stage 1 produced the following locked B0 topology measurements on validation:
+## Stage 1 — topology audit
+
+Locked B0 validation topology:
 
 | Metric | B0 |
 |---|---:|
@@ -106,29 +78,23 @@ Stage 1 produced the following locked B0 topology measurements on validation:
 | Left recall | 0.9420 |
 | Right recall | 0.9816 |
 | Multi-segment case-side rate | 0.5750 |
-| False-positive segments | 62 |
-| False-positive segment slices | 358 |
+| Detached false-positive segments | 62 |
+| Detached false-positive slices | 358 |
 | Mean onset absolute error | 38.25 slices |
 | Mean offset absolute error | 17.03 slices |
 
-The topology audit supports the core V1a.3-B hypothesis: 23 of 40 validation
-case-sides contain multiple predicted presence segments, and 22 case-sides
-contain at least one fully detached false-positive segment. Most detached false
-segments occur before the ground-truth kidney span and the left side remains the
-harder side.
+The audit showed that many residual errors were detached z-axis activation
+islands rather than only small local boundary errors.
 
-The initial B1/B2 grid produced zero configurations satisfying the locked recall
-constraints. Its highest-recall points occurred at the edge of the search grid,
-so Stage 1 was treated as search-space saturation rather than a rejection of the
-span hypothesis.
+The first B1/B2 sweep had zero configurations meeting the locked recall
+constraints because its highest-recall points landed on the search boundary.
 
-## Stage 1b — widened span-support sweep
+## Stage 1b — widened support sweep
 
-Stage 1b changed no model, geometry, split, MedSAM setting, or recall constraint.
-It only widened the saturated decoder dimensions and added GT-independent
-symmetric padding around the predicted span.
+Stage 1b widened only validation-time decoder support. It did not change the
+model, geometry, MedSAM, split, or recall constraints.
 
-The sweep evaluated 3,087 configurations. Of these, 2,464 satisfied:
+Locked constraints:
 
 ```text
 overall recall >= 0.95
@@ -136,41 +102,17 @@ left recall    >= 0.90
 right recall   >= 0.90
 ```
 
-The lowest-FPR feasible B1 point was:
+The sweep evaluated 3,087 configurations; 2,464 were feasible.
 
-```text
-mode              = single_span
-left threshold    = 0.0035
-right threshold   = 0.0400
-baseline max gap  = 4
-boundary pad      = 1
-recall             0.9502
-left/right recall  0.9275 / 0.9775
-FPR                0.1193
-specificity        0.8807
-```
+Lowest-FPR feasible points:
 
-The lowest-FPR feasible B2 point was:
+| Candidate | Recall | FPR | Specificity |
+|---|---:|---:|---:|
+| B0 locked | 0.9600 | 0.1757 | 0.8243 |
+| B1 low-FPR | 0.9502 | **0.1193** | **0.8807** |
+| B2 low-FPR | 0.9516 | 0.1207 | 0.8793 |
 
-```text
-mode               = optimal_span
-left threshold     = 0.0015
-right threshold    = 0.0400
-max internal gap   = 3
-boundary pad       = 1
-recall              0.9516
-left/right recall   0.9301 / 0.9775
-FPR                 0.1207
-specificity         0.8793
-```
-
-Both remove all detached multi-segment false-positive islands. Their mean
-onset/offset absolute errors are about `11/7` slices rather than the B0
-`38.25/17.03` slices.
-
-A second important Stage-1b result is that the span decoder can also match B0's
-`0.9600` recall while still reducing FPR. The minimum-FPR recall-matched points
-are approximately:
+Recall-matched points also improved over B0:
 
 | Candidate | Recall | FPR | Specificity |
 |---|---:|---:|---:|
@@ -178,57 +120,125 @@ are approximately:
 | B1 recall-matched | 0.9600 | 0.1475 | 0.8525 |
 | B2 recall-matched | 0.9600 | 0.1477 | 0.8523 |
 
-Therefore Stage 1b passes the presence-level gate and justifies a negative-aware
-MedSAM comparison.
+B1/B2 removed detached multi-segment islands and reduced onset/offset absolute
+error to about `11/7` slices.
 
-## Stage 2 — negative-aware MedSAM
+## Stage 2 — negative-aware frozen-MedSAM validation
 
-Stage 2 deliberately evaluates a compact predeclared set rather than every
-Stage-1b sweep point:
+Five candidates were fixed from presence metrics before MedSAM evaluation:
 
 ```text
 B0 locked baseline
-B1 minimum-FPR feasible point
-B1 minimum-FPR point matching B0 recall
-B2 minimum-FPR feasible point
-B2 minimum-FPR point matching B0 recall
+B1 low-FPR
+B1 recall-matched
+B2 low-FPR
+B2 recall-matched
 ```
 
-This gives both a low-FPR operating point and a recall-matched comparison for
-each decoder family. Candidate construction uses only presence metrics; MedSAM
-results do not influence which configurations enter Stage 2.
+Validation results:
 
-If Stage 1b has already completed in the current runtime:
+| Candidate | All-slice Dice | Positive Dice | Negative specificity | Case-volume Dice |
+|---|---:|---:|---:|---:|
+| **B1 low-FPR** | **0.8356** | 0.8102 | **0.8490** | **0.8548** |
+| B2 low-FPR | 0.8335 | 0.8120 | 0.8448 | 0.8544 |
+| B1 recall-matched | 0.8211 | **0.8167** | 0.8234 | 0.8500 |
+| B2 recall-matched | 0.8211 | **0.8167** | 0.8234 | 0.8499 |
+| B0 / V1a.3-A | 0.7760 | 0.8067 | 0.7598 | 0.8479 |
+
+B1 low-FPR is the validation winner under the predeclared ranking rule:
+case-volume Dice, then all-slice Dice, then lower negative false-positive mask
+rate.
+
+Compared with B0, B1 low-FPR changes:
+
+```text
+all-slice Dice          +0.0597
+positive-slice Dice     +0.0035
+negative specificity    +0.0891
+case-volume Dice        +0.0068
+```
+
+The paired 20-case case-volume improvement is not claimed as statistically
+significant; the bootstrap confidence interval crosses zero.
+
+## Frozen V1a.3-B configuration
+
+`FROZEN_LOCK.json` records the validation decision before the secondary test is
+run.
+
+```text
+upstream checkpoint = V1a.3-A epoch 18
+weights             = EMA
+
+decoder             = single_span
+left threshold      = 0.0035
+right threshold     = 0.0400
+baseline max gap    = 4
+boundary pad        = 1
+
+expansion scale     = 1.20
+target label        = kidney (1)
+```
+
+No parameter may be changed after the secondary-test results are opened.
+
+## Locked secondary test
+
+The original 27-case test split was already exposed during V1a.3-A. Therefore
+V1a.3-B uses it only as a **locked secondary evaluation**, not as a pristine
+first-look test.
+
+If the current Colab environment is already restored:
 
 ```bash
 cd /content/medsam-kits23-prompt-experiments
 git pull --ff-only origin v1a3b-span-decoder
 
 bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/run_v1a3b_stage2_medsam.sh
+  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/run_v1a3b_secondary_test.sh
 ```
+
+The runner:
+
+1. verifies the exact epoch-18 checkpoint SHA;
+2. verifies `FROZEN_LOCK.json`;
+3. reuses the already-generated V1a.3-A test base predictions when available;
+4. otherwise regenerates the same epoch-18 EMA base predictions;
+5. materializes only B0 and frozen B1;
+6. computes prompt metrics;
+7. runs both candidates together through negative-aware MedSAM;
+8. requires B0 to reproduce the published V1a.3-A secondary-test baseline;
+9. writes a B1-minus-B0 comparison;
+10. backs up results to Drive.
 
 Outputs:
 
 ```text
-/content/v1a1_work/v1a3b_stage2_medsam/
-/content/drive/MyDrive/medsam-kits23/v1a3b_results/stage2_medsam/
+/content/v1a1_work/v1a3b_secondary_test/
+/content/drive/MyDrive/medsam-kits23/v1a3b_results/secondary_test/
 ```
 
-Package the compact Stage-2 review bundle with:
+Package the compact review bundle with:
 
 ```bash
 python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/package_v1a3b_stage2.py \
-  --root /content/v1a1_work/v1a3b_stage2_medsam \
-  --output /content/v1a3b_stage2_review.zip
+  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/package_v1a3b_secondary_test.py \
+  --root /content/v1a1_work/v1a3b_secondary_test \
+  --output /content/v1a3b_secondary_test_review.zip
 ```
 
-Stage 2 is still validation-only. A V1a.3-B frozen test is considered only if a
-single decoder configuration is selected entirely from validation results.
+## Test policy
 
-## Test-split rule
+V1a.3-B development and selection are complete before this secondary test. The
+secondary test may be used only to report the behavior of the frozen B1
+configuration relative to the already-known B0 baseline. It must not be used to:
 
-V1a.3-B development remains validation-only. The scripts verify that prediction
-rows exactly match the 20-case / 3,644-row validation manifest. No V1a.3-B test
-configuration is opened during Stage 1, Stage 1b, or Stage 2.
+- change the checkpoint;
+- change thresholds;
+- change gap or boundary padding;
+- change expansion;
+- switch back to B2;
+- select another decoder configuration.
+
+For a publication-quality untouched estimate, a new holdout from previously
+unused KiTS23 cases should be created later.
