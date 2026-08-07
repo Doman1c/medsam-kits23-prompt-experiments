@@ -36,6 +36,7 @@ samplers, or loss variants.
 | [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
 | [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | **Frozen test complete** |
+| [V1a.3-B](v1/v1a3b/) | Can explicit case-level z-span decoding suppress residual presence islands without retraining? | **Validation in progress** |
 
 ## V1a.2 findings
 
@@ -119,6 +120,25 @@ a completed negative-sampling study rather than a new overall system winner.
 See [V1a.3-A protocol and results](v1/v1a3/) and the
 [compact result bundle](v1/v1a3/results/).
 
+## Current development: V1a.3-B
+
+V1a.3-B freezes the V1a.3-A epoch-18 EMA network and changes only the case-level
+presence decoder. The first controlled comparison is:
+
+```text
+B0 locked V1a.3-A threshold + smoothing + gap fill
+B1 retain one dominant threshold-derived segment per kidney side
+B2 choose one optimal contiguous kidney span with bounded internal low-confidence gap
+```
+
+The branch includes a fresh-Colab environment recovery script, a topology audit,
+a recall-constrained decoder sweep, prompt-level shortlist evaluation, and an
+optional negative-aware MedSAM stage. Development is restricted to the 20-case
+validation split; no new V1a.3-B test access is permitted before validation
+selection is complete.
+
+See [V1a.3-B design and runbook](v1/v1a3b/).
+
 ## Repository structure
 
 ```text
@@ -129,10 +149,10 @@ See [V1a.3-A protocol and results](v1/v1a3/) and the
     ├── v1a1/                   # frozen baseline and test analysis
     ├── v1a2/                   # predicted-center size supervision
     ├── v1a2b/                  # decoded-box supervision and follow-up validation
-    └── v1a3/                   # targeted-sampling presence repair
+    ├── v1a3/                   # completed targeted-sampling presence repair
+    └── v1a3b/                  # case-level z-span presence decoding
         ├── scripts/
-        ├── v1a3/
-        ├── results/
+        ├── v1a3b/
         ├── DESIGN.md
         └── README.md
 ```
@@ -162,4 +182,5 @@ are recorded in the compact result files.
 | V1a.1 | **0.7628** | **0.7950** |
 | V1a.3-A epoch 18 | 0.7239 | 0.7627 |
 
-No V1a.3-A parameter was changed after the frozen test was opened.
+No V1a.3-A parameter was changed after the frozen test was opened. V1a.3-B is a
+new validation-only experiment and does not tune against that frozen result.

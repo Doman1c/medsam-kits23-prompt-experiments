@@ -1,0 +1,6 @@
+candidate,mode,left_threshold,right_threshold,baseline_max_gap,max_internal_gap,boundary_pad,presence_recall,presence_fpr,presence_specificity,all_slice_dice,positive_slice_dice,positive_slice_case_mean_dice,positive_slice_detection_recall,negative_specificity,negative_fp_mask_rate,case_volume_dice
+b1_low_fpr,single_span,0.0035,0.04,4,2,1,0.9502325581,0.1193071234,0.8806928766,0.835611,0.810180,0.821601,0.933812,0.848954,0.151046,0.854752
+b2_low_fpr,optimal_span,0.0015,0.04,2,3,1,0.9516279070,0.1206695212,0.8793304788,0.833477,0.811955,0.823821,0.936204,0.844770,0.155230,0.854429
+b1_recall_matched,single_span,0.002,0.01,3,2,2,0.9600000000,0.1475282211,0.8524717789,0.821100,0.816659,0.835444,0.940989,0.823431,0.176569,0.849970
+b2_recall_matched,optimal_span,0.0015,0.01,2,3,2,0.9600000000,0.1477228494,0.8522771506,0.821100,0.816659,0.835444,0.940989,0.823431,0.176569,0.849915
+b0_locked_baseline,baseline,0.005,0.005,2,2,0,0.9600000000,0.1757493188,0.8242506812,0.775953,0.806677,0.822952,0.953748,0.759833,0.240167,0.847904

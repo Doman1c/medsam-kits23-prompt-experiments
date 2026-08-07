@@ -1,0 +1,56 @@
+{
+  "experiment": "V1a.3-B",
+  "status": "validation_frozen_before_secondary_test",
+  "frozen_upstream": {
+    "v1a3a_merge_commit": "f91422d8b4b44b546a42c649cde92a49d83f07f7",
+    "checkpoint_epoch": 18,
+    "weights": "ema",
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2"
+  },
+  "validation_selection": {
+    "stage2_review_bundle_sha256": "2ceb6241257f4ae6dcce4c83cdec79296d4e80378555ca956d4cad8d3a2bad8c",
+    "selection_rule": "Rank by case-volume Dice, then all-slice mean Dice, then lower negative false-positive mask rate.",
+    "winner": "b1_low_fpr",
+    "decoder_config_sha256": "85c57c0a5d756b53570f4572e90ffaeb5a47b37fb2c4d915d7a116c67f39da7f",
+    "calibration_sha256": "d9bb00719b3a6cb0f9f07fb2643e773aa13db0b9a8de53c6c52bd7328270d444",
+    "decoder": {
+      "mode": "single_span",
+      "left_threshold": 0.0035,
+      "right_threshold": 0.04,
+      "baseline_max_gap": 4,
+      "max_internal_gap": 2,
+      "min_span_length": 1,
+      "span_penalty": 0.0,
+      "length_penalty": 0.0,
+      "boundary_pad": 1
+    },
+    "expansion_scale": 1.2,
+    "target_labels": [1],
+    "validation_metrics": {
+      "presence_recall": 0.9502325581395349,
+      "presence_fpr": 0.11930712339431686,
+      "all_slice_dice": 0.835611,
+      "positive_slice_dice": 0.81018,
+      "negative_specificity": 0.848954,
+      "case_volume_dice": 0.854752
+    }
+  },
+  "secondary_test_policy": {
+    "reason": "The 27-case test split was already exposed during V1a.3-A, so this is a locked secondary evaluation rather than a pristine first-look test.",
+    "expected_cases": 27,
+    "expected_rows": 4277,
+    "configuration_changes_after_test": false,
+    "allowed_comparison": [
+      "b0_locked_baseline",
+      "b1_low_fpr_frozen"
+    ],
+    "forbidden": [
+      "change checkpoint",
+      "change thresholds",
+      "change baseline_max_gap",
+      "change boundary_pad",
+      "change expansion_scale",
+      "select a different decoder from secondary-test results"
+    ]
+  }
+}

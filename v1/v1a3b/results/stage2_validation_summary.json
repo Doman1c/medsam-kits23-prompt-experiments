@@ -1,0 +1,67 @@
+{
+  "experiment": "V1a.3-B",
+  "stage": "stage2_validation_negative_aware_medsam",
+  "test_set_used": false,
+  "validation": {
+    "cases": 20,
+    "slices": 3644,
+    "positive_slices": 1254,
+    "negative_slices": 2390
+  },
+  "selection_rule": "Rank by case-volume Dice, then all-slice mean Dice, then lower negative false-positive mask rate.",
+  "winner": {
+    "name": "b1_low_fpr",
+    "decoder": {
+      "mode": "single_span",
+      "left_threshold": 0.0035,
+      "right_threshold": 0.04,
+      "baseline_max_gap": 4,
+      "boundary_pad": 1,
+      "expansion_scale": 1.2
+    },
+    "presence": {
+      "positive_recall": 0.9502325581395349,
+      "left_positive_recall": 0.927536231884058,
+      "right_positive_recall": 0.977482088024565,
+      "false_positive_rate": 0.11930712339431686,
+      "specificity": 0.8806928766056832,
+      "multi_segment_case_side_rate": 0.0,
+      "detached_false_positive_segments": 0,
+      "onset_abs_error_mean": 11.1,
+      "offset_abs_error_mean": 6.875
+    },
+    "prompt": {
+      "prompt_success_rate": 0.8232558139534883,
+      "tight_box_iou": 0.7605475557029737,
+      "continuous_score": 0.7786574336827112
+    },
+    "medsam": {
+      "all_slice_dice_mean": 0.835611,
+      "positive_slice_dice_mean": 0.810180,
+      "positive_slice_case_mean_dice": 0.821601,
+      "positive_slice_detection_recall": 0.933812,
+      "negative_slice_specificity": 0.848954,
+      "negative_false_positive_mask_rate": 0.151046,
+      "case_volume_dice_mean": 0.854752
+    }
+  },
+  "locked_b0": {
+    "all_slice_dice_mean": 0.775953,
+    "positive_slice_dice_mean": 0.806677,
+    "negative_slice_specificity": 0.759833,
+    "negative_false_positive_mask_rate": 0.240167,
+    "case_volume_dice_mean": 0.847904
+  },
+  "winner_minus_b0": {
+    "all_slice_dice_mean": 0.059658,
+    "positive_slice_dice_mean": 0.003503,
+    "negative_slice_specificity": 0.089121,
+    "negative_false_positive_mask_rate": -0.089121,
+    "case_volume_dice_mean": 0.006848
+  },
+  "notes": {
+    "paired_case_volume": "B1 low-FPR improves case-volume Dice in 14/20 validation cases; paired bootstrap 95% CI for the mean B1-minus-B0 difference crosses zero, so do not claim statistical significance.",
+    "complexity": "B2 low-FPR is effectively tied but slightly worse on the primary case-volume metric; B1 is retained by the predeclared ranking rule and parsimony.",
+    "test_rule": "No V1a.3-B test result is included in this stage."
+  }
+}
