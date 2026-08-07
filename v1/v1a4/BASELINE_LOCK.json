@@ -1,0 +1,44 @@
+{
+  "experiment": "V1a.4",
+  "status": "validation_only_recall_recovery_development",
+  "base": {
+    "v1a3b_merge_commit": "36c260096f733fc54e4db0819cc04527d021eff6",
+    "upstream_checkpoint": "V1a.3-A epoch 18",
+    "weights": "ema",
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "decoder": {
+      "mode": "single_span",
+      "left_threshold": 0.0035,
+      "right_threshold": 0.04,
+      "baseline_max_gap": 4,
+      "boundary_pad": 1
+    },
+    "expansion_scale": 1.2,
+    "target_labels": [1]
+  },
+  "frozen_validation_reference": {
+    "presence_recall": 0.9502325581395349,
+    "presence_fpr": 0.11930712339431686,
+    "all_slice_dice": 0.835611,
+    "positive_slice_dice": 0.81018,
+    "negative_specificity": 0.848954,
+    "case_volume_dice": 0.854752
+  },
+  "locked_recovery_gate": {
+    "minimum_overall_presence_recall": 0.96,
+    "minimum_left_presence_recall": 0.94,
+    "minimum_right_presence_recall": 0.97,
+    "maximum_presence_fpr": 0.15,
+    "rationale": "Recover approximately the locked B0 validation recall while retaining a material fraction of V1a.3-B false-positive suppression. These thresholds are defined from validation baselines, not from the secondary test."
+  },
+  "development_policy": {
+    "split": "validation",
+    "expected_cases": 20,
+    "expected_rows": 3644,
+    "retraining": false,
+    "geometry_changes": false,
+    "medsam_changes": false,
+    "secondary_test_parameter_selection": false,
+    "note": "The already-exposed V1a.3-B secondary test motivates the recall-recovery research question but must not be used to select V1a.4 decoder parameters."
+  }
+}
