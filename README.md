@@ -37,7 +37,7 @@ expansion, samplers, loss variants, or later decoder parameters.
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
 | [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | Frozen test complete |
 | [V1a.3-B](v1/v1a3b/) | Can case-level single-span decoding suppress detached presence islands? | Secondary evaluation complete |
-| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | **Validation development** |
+| [V1a.4](v1/v1a4/) | Can controlled recovery regain recall lost by hard single-span pruning? | **Validation complete — no new winner** |
 
 ## V1a.2 findings
 
@@ -124,34 +124,43 @@ the false-positive benefit but over-pruned positive slices:
 V1a.3-B is therefore retained as a conservative operating point with strong
 negative-slice suppression rather than an unqualified replacement for B0.
 
-## Current development: V1a.4
+## Completed V1a.4 validation study
 
-V1a.4 keeps the V1a.3-A epoch-18 EMA network and V1a.3-B frozen single-span seed.
-It tests whether missing positive slices can be recovered without giving back the
-false-positive suppression.
+V1a.4 kept the V1a.3-A epoch-18 EMA network and the V1a.3-B frozen single-span
+seed. It tested whether missed positive slices could be recovered without giving
+back the false-positive suppression.
 
-Stage 1 audited 107 frozen-B1 false-negative side-slices. Only 47/107 lie within
-16 slices of the selected span. One left case-side contributes 76 FN slices
-extending up to 76 slices before the dominant seed. The best local hysteresis
-recovery improves overall recall from `0.9502` to `0.9567` at FPR `0.1341`, but
-does not meet the locked recall gate. A local satellite search capped at 16
-slices also does not improve recall.
+Stage 1 showed that the failure was not purely local: 107 frozen-B1 false-negative
+side-slices were found, and one left case-side (`case_00067`) contributed 76 of
+them, extending up to 76 slices before the selected dominant span.
 
-Stage 1b therefore tests one strongly supported **remote satellite** segment,
-alone and combined with the fixed Stage-1 local hysteresis rule. The original
-gate remains unchanged:
+Stage 1b therefore tested a strongly supported remote satellite segment. It
+successfully crossed the locked presence gate. The cleanest R2b point raised
+presence recall from `0.9502` to `0.9619` while keeping FPR fixed at `0.1193`.
 
-```text
-overall recall >= 0.96
-left recall    >= 0.94
-right recall   >= 0.97
-FPR             <= 0.15
-```
+Negative-aware frozen-MedSAM validation then compared four candidates under the
+predeclared ranking rule: case-volume Dice, then all-slice Dice, then lower
+negative FP-mask rate.
 
-No MedSAM or test access is allowed until at least one Stage-1b decoder passes
-this presence-level gate.
+| Candidate | All-slice Dice | Positive Dice | Detection recall | Negative specificity | Case-volume Dice |
+|---|---:|---:|---:|---:|---:|
+| **Frozen V1a.3-B B1** | 0.83561 | 0.81018 | 0.93381 | **0.84895** | **0.85475** |
+| Fixed local hysteresis | 0.82979 | 0.81400 | 0.93541 | 0.83808 | 0.85447 |
+| R2b remote satellite | **0.83579** | 0.81070 | **0.95136** | **0.84895** | 0.85393 |
+| R3 hybrid | 0.82997 | **0.81453** | **0.95295** | 0.83808 | 0.85365 |
 
-See [V1a.4 design and runbook](v1/v1a4/).
+R2b demonstrates that presence recovery itself works, but the recovered remote
+slices do not have sufficiently reliable frozen box geometry. Relative to frozen
+B1, R2b newly prompts 22 GT-positive combined slices (all from `case_00067`) and
+no GT-negative slices, yet those slices add only 650 TP pixels and 19,374 FP
+pixels; their median slice Dice is `0.0`.
+
+Therefore V1a.4 does **not** replace frozen V1a.3-B B1. No V1a.4 secondary-test
+run is performed, and no post-Stage-2 decoder tuning is allowed. The next
+research bottleneck is geometry/prompt quality on recovered or low-confidence
+slices, not further widening of case-level presence post-processing.
+
+See [V1a.4 protocol and compact results](v1/v1a4/).
 
 ## Repository structure
 
