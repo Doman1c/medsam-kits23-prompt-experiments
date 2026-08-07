@@ -117,8 +117,18 @@ contain at least one fully detached false-positive segment. Most detached false
 segments occur before the ground-truth kidney span and the left side remains the
 harder side.
 
-However, the initial B1/B2 grid produced zero configurations satisfying the
-locked recall constraints:
+The initial B1/B2 grid produced zero configurations satisfying the locked recall
+constraints. Its highest-recall points occurred at the edge of the search grid,
+so Stage 1 was treated as search-space saturation rather than a rejection of the
+span hypothesis.
+
+## Stage 1b — widened span-support sweep
+
+Stage 1b changed no model, geometry, split, MedSAM setting, or recall constraint.
+It only widened the saturated decoder dimensions and added GT-independent
+symmetric padding around the predicted span.
+
+The sweep evaluated 3,087 configurations. Of these, 2,464 satisfied:
 
 ```text
 overall recall >= 0.95
@@ -126,68 +136,99 @@ left recall    >= 0.90
 right recall   >= 0.90
 ```
 
-The highest-recall initial B1 configuration reached overall recall `0.9363`
-with FPR `0.1228`. The highest-recall B2 configuration reached overall recall
-`0.9386`, left/right recall `0.9011/0.9836`, and FPR `0.1296`. B2 removed all
-detached multi-segment false-positive islands and reduced mean onset/offset
-absolute error to approximately `13.13/6.85` slices, but it still lost too many
-positive slices.
-
-This is not treated as a final rejection of the span hypothesis because the
-highest-recall B2 point occurred at the lowest threshold and largest internal
-gap in the initial search grid. The first sweep therefore hit its search
-boundary.
-
-## Stage 1b — widened span-support sweep
-
-Stage 1b changes no model, geometry, split, MedSAM setting, or recall constraint.
-It only widens the two Stage-1 parameters that saturated at the grid boundary
-and adds a GT-independent z-boundary padding term after the single span has been
-selected.
-
-The new search covers:
+The lowest-FPR feasible B1 point was:
 
 ```text
-lower left/right probability thresholds
-single-span max gaps up to 5
-optimal-span internal gaps up to 6
-symmetric predicted-span boundary padding: 0,1,2,3,4,6,8 slices
+mode              = single_span
+left threshold    = 0.0035
+right threshold   = 0.0400
+baseline max gap  = 4
+boundary pad      = 1
+recall             0.9502
+left/right recall  0.9275 / 0.9775
+FPR                0.1193
+specificity        0.8807
 ```
 
-Boundary padding is applied only to the predicted span boundaries and never
-uses ground-truth onset/offset information.
+The lowest-FPR feasible B2 point was:
 
-If Stage 1 already ran in the current Colab runtime, update the branch and run:
+```text
+mode               = optimal_span
+left threshold     = 0.0015
+right threshold    = 0.0400
+max internal gap   = 3
+boundary pad       = 1
+recall              0.9516
+left/right recall   0.9301 / 0.9775
+FPR                 0.1207
+specificity         0.8793
+```
+
+Both remove all detached multi-segment false-positive islands. Their mean
+onset/offset absolute errors are about `11/7` slices rather than the B0
+`38.25/17.03` slices.
+
+A second important Stage-1b result is that the span decoder can also match B0's
+`0.9600` recall while still reducing FPR. The minimum-FPR recall-matched points
+are approximately:
+
+| Candidate | Recall | FPR | Specificity |
+|---|---:|---:|---:|
+| B0 locked | 0.9600 | 0.1757 | 0.8243 |
+| B1 recall-matched | 0.9600 | 0.1475 | 0.8525 |
+| B2 recall-matched | 0.9600 | 0.1477 | 0.8523 |
+
+Therefore Stage 1b passes the presence-level gate and justifies a negative-aware
+MedSAM comparison.
+
+## Stage 2 — negative-aware MedSAM
+
+Stage 2 deliberately evaluates a compact predeclared set rather than every
+Stage-1b sweep point:
+
+```text
+B0 locked baseline
+B1 minimum-FPR feasible point
+B1 minimum-FPR point matching B0 recall
+B2 minimum-FPR feasible point
+B2 minimum-FPR point matching B0 recall
+```
+
+This gives both a low-FPR operating point and a recall-matched comparison for
+each decoder family. Candidate construction uses only presence metrics; MedSAM
+results do not influence which configurations enter Stage 2.
+
+If Stage 1b has already completed in the current runtime:
 
 ```bash
 cd /content/medsam-kits23-prompt-experiments
-git pull origin v1a3b-span-decoder
+git pull --ff-only origin v1a3b-span-decoder
 
-bash /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/run_v1a3b_stage1b.sh
+bash \
+  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/run_v1a3b_stage2_medsam.sh
 ```
 
 Outputs:
 
 ```text
-/content/v1a1_work/v1a3b_stage1b/
-/content/drive/MyDrive/medsam-kits23/v1a3b_results/stage1b/
+/content/v1a1_work/v1a3b_stage2_medsam/
+/content/drive/MyDrive/medsam-kits23/v1a3b_results/stage2_medsam/
 ```
 
-Package the compact review bundle with:
+Package the compact Stage-2 review bundle with:
 
 ```bash
 python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/package_v1a3b_stage1b.py \
-  --root /content/v1a1_work/v1a3b_stage1b \
-  --output /content/v1a3b_stage1b_review.zip
+  /content/medsam-kits23-prompt-experiments/v1/v1a3b/scripts/package_v1a3b_stage2.py \
+  --root /content/v1a1_work/v1a3b_stage2_medsam \
+  --output /content/v1a3b_stage2_review.zip
 ```
 
-Do not run the full negative-aware MedSAM stage until Stage 1b demonstrates at
-least one B1/B2 configuration satisfying all locked recall constraints. This
-avoids spending frozen-MedSAM compute on an infeasible decoder.
+Stage 2 is still validation-only. A V1a.3-B frozen test is considered only if a
+single decoder configuration is selected entirely from validation results.
 
 ## Test-split rule
 
-V1a.3-B development is validation-only. The scripts verify that the prediction
-rows exactly match the validation manifest. A new frozen test evaluation is
-considered only after a decoder is selected entirely on validation.
+V1a.3-B development remains validation-only. The scripts verify that prediction
+rows exactly match the 20-case / 3,644-row validation manifest. No V1a.3-B test
+configuration is opened during Stage 1, Stage 1b, or Stage 2.
