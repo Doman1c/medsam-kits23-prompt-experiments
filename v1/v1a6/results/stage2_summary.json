@@ -1,0 +1,77 @@
+{
+  "experiment": "V1a.6",
+  "stage": "stage2_negative_aware_medsam_validation",
+  "test_set_used": false,
+  "secondary_test_used": false,
+  "bundle_integrity": {
+    "listed_files": 16,
+    "size_and_sha256_verified": true,
+    "bundle_sha256": "bbd6b8e7ff3ef76514ed0cf160a306e4a7e381db42dbdb7f4917d42b89498c58",
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "runtime": {
+    "elapsed_seconds": 861.2338373661041,
+    "device": "cuda",
+    "gpu_name": "Tesla T4"
+  },
+  "ranking_rule": [
+    "case_volume_dice_mean",
+    "all_slice_dice_mean",
+    "negative_slice_specificity"
+  ],
+  "ranked_candidates": [
+    "g0_frozen_b1",
+    "g1_r2b_native",
+    "g6_robust_linear"
+  ],
+  "results": {
+    "g0_frozen_b1": {
+      "all_slice_dice_mean": 0.835611,
+      "positive_slice_dice_mean": 0.810180,
+      "positive_slice_detection_recall": 0.933812,
+      "negative_slice_specificity": 0.848954,
+      "case_volume_dice_mean": 0.854752,
+      "total_tp_pixels": 5643121,
+      "total_fp_pixels": 900945,
+      "total_fn_pixels": 504767
+    },
+    "g1_r2b_native": {
+      "all_slice_dice_mean": 0.835791,
+      "positive_slice_dice_mean": 0.810703,
+      "positive_slice_detection_recall": 0.951356,
+      "negative_slice_specificity": 0.848954,
+      "case_volume_dice_mean": 0.853935,
+      "total_tp_pixels": 5643771,
+      "total_fp_pixels": 920319,
+      "total_fn_pixels": 504117
+    },
+    "g6_robust_linear": {
+      "all_slice_dice_mean": 0.835782,
+      "positive_slice_dice_mean": 0.810677,
+      "positive_slice_detection_recall": 0.953748,
+      "negative_slice_specificity": 0.848954,
+      "case_volume_dice_mean": 0.853540,
+      "total_tp_pixels": 5643729,
+      "total_fp_pixels": 929454,
+      "total_fn_pixels": 504159
+    }
+  },
+  "recovered_slice_pairing": {
+    "n_slices": 25,
+    "g1_mean_dice": 0.026199407755474087,
+    "g6_mean_dice": 0.02492059009540826,
+    "g1_tp_pixels": 650,
+    "g6_tp_pixels": 608,
+    "g1_fp_pixels": 19374,
+    "g6_fp_pixels": 28509,
+    "g6_minus_g1_mean_dice": -0.0012788176600658238,
+    "g6_minus_g1_tp_pixels": -42,
+    "g6_minus_g1_fp_pixels": 9135,
+    "improved_slices": 6,
+    "worsened_slices": 6,
+    "unchanged_slices": 13
+  },
+  "conclusion": "G6 improves Stage-1 prompt geometry metrics but does not improve frozen-MedSAM segmentation. It increases recovered-satellite false-positive pixels and lowers case-volume Dice. Frozen V1a.3-B B1 remains the validation winner and the image-only post-processing mainline is frozen."
+}
