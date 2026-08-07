@@ -21,9 +21,6 @@ R3 hybrid
   fixed Stage-1 local hysteresis + R2b remote satellite
 ```
 
-The objective is to recover validation recall while keeping a substantial part
-of V1a.3-B's false-positive suppression.
-
 ## Frozen baseline
 
 ```text
@@ -39,12 +36,12 @@ boundary pad        = 1
 expansion scale     = 1.20
 ```
 
-The exact experiment lock is stored in `BASELINE_LOCK.json`.
+The exact baseline and development rules are stored in `BASELINE_LOCK.json`.
 
 ## Locked validation gate
 
-V1a.4 development uses only the 20-case / 3,644-row validation split.
-The recovery gate remains unchanged across Stage 1 and Stage 1b:
+V1a.4 uses only the 20-case / 3,644-row validation split for decoder selection.
+The gate is unchanged throughout development:
 
 ```text
 overall recall >= 0.96
@@ -53,12 +50,9 @@ right recall   >= 0.97
 FPR             <= 0.15
 ```
 
-No MedSAM and no test split are used before a presence decoder passes this gate.
+No MedSAM or test access is allowed before a presence decoder passes this gate.
 
 ## Stage 1 result
-
-The Stage-1 review bundle passed its size/SHA-256 integrity checks and contained
-no test result, checkpoint, NPZ, or large prediction table.
 
 Frozen B1 validation presence:
 
@@ -71,8 +65,7 @@ Frozen B1 validation presence:
 | Specificity | 0.8807 |
 | False-negative slices | 107 |
 
-False-negative topology showed that the error is not mainly a short local
-boundary problem:
+The false-negative audit showed a long-range split-span failure mode:
 
 ```text
 83 / 107 FN slices occur before the frozen seed
@@ -82,16 +75,10 @@ boundary problem:
 47 / 107 are within 16 slices of the frozen seed
 ```
 
-One validation case-side (`case_00067`, left) accounts for 76 of the 107 false
-negative slices. Those misses extend as far as 76 slices before the frozen seed.
-This reveals a long-range split-span failure mode: the hard B1 decoder can pick a
-dominant segment while discarding another substantial supported part of the same
-anatomical target.
+One validation case-side (`case_00067`, left) accounts for 76 FN slices and the
+misses extend up to 76 slices before the dominant seed.
 
-The Stage-1 sweep evaluated 738 configurations and produced zero points satisfying
-the locked gate.
-
-Best local hysteresis point under `FPR <= 0.15`:
+The best local hysteresis point under `FPR <= 0.15` was:
 
 ```text
 left recovery threshold  = 0.0005
@@ -105,45 +92,55 @@ right recall   = 0.9867
 FPR            = 0.1341
 ```
 
-R1 therefore recovers useful local boundary misses, especially on the right, but
-cannot repair the dominant long-range left-side error. The original R2 search
-was capped at a 16-slice satellite distance and did not improve recall over the
-frozen B1 baseline.
+Stage 1 swept 738 configurations and none met the full gate. Nearby satellite
+recovery capped at 16 slices did not improve recall. Local-only recovery was
+therefore rejected as sufficient.
 
-Stage 1 therefore rejects **local-only recovery as sufficient**, not the general
-satellite-recovery hypothesis. Compact findings are stored in
-`results/stage1_summary.json`.
+## Stage 1b result
 
-## Stage 1b — remote satellite + controlled hybrid
-
-Stage 1b keeps the same checkpoint, B1 seed, geometry, expansion, validation
-split, and recall/FPR gate.
-
-The local R1 component is no longer swept. It is frozen to the best Stage-1
-local-recovery point above. Stage 1b tests only the new missing degree of freedom:
-whether one strongly supported secondary segment may be retained at a larger
-z-distance.
-
-Two controlled families are evaluated:
+Stage 1b widened only the satellite support range and kept the Stage-1 local
+hysteresis rule frozen. It evaluated 360 validation configurations:
 
 ```text
-R2b remote_satellite
-  frozen B1 dominant span
-  + at most one threshold-derived satellite
-  + distance up to 96 slices
-  + evidence-ratio and minimum-length gates
-
-R3 hybrid
-  fixed Stage-1 R1 local hysteresis
-  union
-  R2b remote satellite
+feasible total            = 40
+remote_satellite feasible = 20
+hybrid feasible           = 20
 ```
 
-The sweep does not fill the long gap between a dominant span and a remote
-satellite. This avoids converting a split-span error into a very long continuous
-false-positive block.
+The recovery appears only once the maximum satellite distance reaches 64 slices;
+searches capped at 48 slices behave like the corresponding references. This
+matches the Stage-1 topology audit.
 
-Run Stage 1b after Stage 1 in the same restored Colab runtime:
+Two Stage-2 finalists are fixed before MedSAM:
+
+| Candidate | Recall | Left recall | Right recall | FPR | Prompt success | Continuous |
+|---|---:|---:|---:|---:|---:|---:|
+| Frozen B1 | 0.9502 | 0.9275 | 0.9775 | 0.1193 | 0.8233 | 0.7787 |
+| Fixed local hysteresis | 0.9567 | 0.9318 | 0.9867 | 0.1341 | 0.8274 | 0.7817 |
+| **R2b remote satellite** | **0.9619** | **0.9488** | 0.9775 | **0.1193** | 0.8233 | 0.7819 |
+| **R3 hybrid** | **0.9684** | **0.9531** | **0.9867** | 0.1341 | **0.8274** | **0.7849** |
+
+R2b is especially important because it crosses the recall gate while preserving
+frozen-B1 FPR exactly on validation. R3 gives the highest recall and prompt-level
+continuous score while retaining the fixed local-hysteresis FPR.
+
+Compact Stage-1/Stage-1b findings are stored under `results/`. The exact
+four-candidate Stage-2 set is frozen in `STAGE2_LOCK.json` before MedSAM.
+
+## Stage 2 — negative-aware MedSAM validation
+
+Stage 2 compares exactly four predeclared candidates:
+
+```text
+1. v1a3b_frozen_b1
+2. stage1_fixed_local_hysteresis
+3. r2b_remote_satellite_1
+4. r3_hybrid_1
+```
+
+No MedSAM result is used to select these inputs.
+
+If the current Colab runtime is already restored and Stage 1b has completed:
 
 ```bash
 cd /content/medsam-kits23-prompt-experiments
@@ -152,27 +149,27 @@ git checkout v1a4-recall-recovery
 git pull --ff-only origin v1a4-recall-recovery
 
 bash \
-  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/run_v1a4_stage1b.sh
+  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/run_v1a4_stage2_medsam.sh
 ```
 
 Outputs:
 
 ```text
-/content/v1a1_work/v1a4_stage1b/
-/content/drive/MyDrive/medsam-kits23/v1a4_results/stage1b/
+/content/v1a1_work/v1a4_stage2_medsam/
+/content/drive/MyDrive/medsam-kits23/v1a4_results/stage2_medsam/
 ```
 
 Package the compact review bundle with:
 
 ```bash
 python \
-  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/package_v1a4_stage1b.py \
-  --root /content/v1a1_work/v1a4_stage1b \
-  --output /content/v1a4_stage1b_review.zip
+  /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/package_v1a4_stage2.py \
+  --root /content/v1a1_work/v1a4_stage2_medsam \
+  --output /content/v1a4_stage2_review.zip
 ```
 
-Do not run MedSAM or open any test split until Stage 1b produces at least one
-configuration satisfying the unchanged gate.
+Do not open any test split after Stage 2. First freeze the validation winner and
+record the final V1a.4 interpretation.
 
 ## Fresh Colab recovery
 
@@ -183,31 +180,8 @@ from google.colab import drive
 drive.mount('/content/drive')
 ```
 
-For the private repository, keep a fresh GitHub token in the Colab Secret
-`GITHUB_TOKEN`, then configure session-only Git authentication without printing
-it:
-
-```python
-from google.colab import userdata
-from pathlib import Path
-import os
-
-TOKEN = userdata.get("GITHUB_TOKEN")
-if not TOKEN:
-    raise RuntimeError("Missing Colab Secret: GITHUB_TOKEN")
-
-netrc = Path.home() / ".netrc"
-netrc.write_text(
-    "machine github.com\n"
-    "login x-access-token\n"
-    f"password {TOKEN}\n",
-    encoding="utf-8",
-)
-os.chmod(netrc, 0o600)
-print("GitHub authentication configured for this runtime.")
-```
-
-Clone the V1a.4 branch and restore assets:
+For the private repository, use the Colab Secret `GITHUB_TOKEN` for session-only
+Git authentication, then clone and restore:
 
 ```bash
 rm -rf /content/medsam-kits23-prompt-experiments
@@ -220,19 +194,13 @@ bash \
   /content/medsam-kits23-prompt-experiments/v1/v1a4/scripts/restore_v1a4_colab.sh
 ```
 
-The restore script reuses the proven V1a.3-B environment recovery, verifies that
-the branch descends from the frozen V1a.3-B merge, checks the epoch-18 checkpoint,
-runs the V1a.4 synthetic decoder gate, validates only the validation split, and
-writes:
-
-```text
-/content/v1a1_work/v1a4_env.sh
-```
+The restore script validates the frozen V1a.3-B ancestry, epoch-18 checkpoint,
+20-case validation split, processed data paths, MedSAM assets, and synthetic
+decoder gates.
 
 ## Development rule
 
-The already-exposed V1a.3-B secondary test is not used for V1a.4 parameter
-selection. It motivates the recall-recovery question only. Stage 1 and Stage 1b
-remain validation-only. Test results must not be used to change threshold,
-extension, satellite distance, evidence ratio, satellite length, decoder family,
-geometry, expansion, or checkpoint.
+The already-exposed V1a.3-B secondary test motivates the recall-recovery question
+only. It is not used for V1a.4 parameter selection. No test result may be used to
+change threshold, extension, satellite distance, evidence ratio, minimum length,
+decoder family, geometry, expansion, or checkpoint.
