@@ -1,0 +1,74 @@
+{
+  "experiment": "V1a.4",
+  "status": "stage2_validation_candidates_frozen_before_medsam",
+  "test_set_used": false,
+  "stage1b_review_bundle_sha256": "c46dfb4fb322a61cf6ef3b63525534a42056e2f4d22513f40d340efa260f9359",
+  "validation_gate": {
+    "minimum_overall_recall": 0.96,
+    "minimum_left_recall": 0.94,
+    "minimum_right_recall": 0.97,
+    "maximum_false_positive_rate": 0.15
+  },
+  "candidate_selection": {
+    "performed_before_medsam": true,
+    "rule": "Keep two frozen references and one predeclared Stage-1b candidate from each feasible recovery family. Rank-1 Stage-1b candidates are used; duplicate rank variants with identical validation predictions are not carried into MedSAM.",
+    "candidates": [
+      {
+        "name": "v1a3b_frozen_b1",
+        "role": "frozen_reference"
+      },
+      {
+        "name": "stage1_fixed_local_hysteresis",
+        "role": "local_recovery_reference"
+      },
+      {
+        "name": "r2b_remote_satellite_1",
+        "role": "remote_satellite_finalist",
+        "decoder": {
+          "mode": "remote_satellite",
+          "satellite_max_distance": 64,
+          "satellite_evidence_ratio": 0.1,
+          "satellite_min_length": 1,
+          "max_satellites": 1
+        },
+        "presence": {
+          "positive_recall": 0.9618604651162791,
+          "left_positive_recall": 0.948849104859335,
+          "right_positive_recall": 0.977482088024565,
+          "false_positive_rate": 0.11930712339431686
+        }
+      },
+      {
+        "name": "r3_hybrid_1",
+        "role": "hybrid_finalist",
+        "decoder": {
+          "mode": "hybrid",
+          "satellite_max_distance": 64,
+          "satellite_evidence_ratio": 0.1,
+          "satellite_min_length": 1,
+          "max_satellites": 1,
+          "fixed_local_hysteresis": {
+            "left_recovery_threshold": 0.0005,
+            "right_recovery_threshold": 0.0025,
+            "max_extension": 6,
+            "bridge_gap": 2
+          }
+        },
+        "presence": {
+          "positive_recall": 0.9683720930232558,
+          "left_positive_recall": 0.9531116794543905,
+          "right_positive_recall": 0.9866939611054247,
+          "false_positive_rate": 0.13409887115609187
+        }
+      }
+    ]
+  },
+  "stage2_policy": {
+    "split": "validation",
+    "negative_aware_medsam": true,
+    "expansion_scale": 1.2,
+    "target_labels": [1],
+    "test_access_allowed": false,
+    "candidate_changes_after_medsam": false
+  }
+}
