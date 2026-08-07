@@ -37,15 +37,16 @@ def main() -> None:
     assert recovered[-1] == 0
 
     # Satellite recovery should retain one nearby secondary segment but reject a
-    # distant high-confidence island.
+    # distant island. The first segment is deliberately the strongest dominant
+    # segment; the second is close enough to recover and the third is too far.
     q = np.asarray(
         [
             0.0,
-            0.010, 0.012, 0.011,
+            0.100, 0.120, 0.110,
             0.0, 0.0, 0.0, 0.0, 0.0,
-            0.006, 0.007,
+            0.020, 0.022,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.020, 0.020,
+            0.010, 0.010,
             0.0,
         ],
         dtype=float,
