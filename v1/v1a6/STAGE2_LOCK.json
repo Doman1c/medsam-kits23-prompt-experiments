@@ -1,0 +1,61 @@
+{
+  "experiment": "V1a.6",
+  "status": "stage2_validation_candidates_frozen_before_medsam",
+  "test_set_used": false,
+  "stage1_review_bundle_sha256": "30d2a54a05169d404f6436e7706d9dba5eb80c59c86ddeaffaeaa18480a5bc67",
+  "stage1_gate": {
+    "reference": "g1_r2b_native",
+    "required_mean_iou_improvement": true,
+    "required_median_center_error_improvement": true,
+    "result": {
+      "g4_satellite_median": false,
+      "g5_rolling_median": false,
+      "g6_robust_linear": true
+    }
+  },
+  "candidate_selection": {
+    "performed_before_medsam": true,
+    "rule": "Compare the current complete-system winner, the frozen R2b native-geometry reference, and the only Stage-1 local-geometry method that passed the predeclared geometry gate.",
+    "candidates": [
+      {
+        "name": "g0_frozen_b1",
+        "role": "complete_system_reference"
+      },
+      {
+        "name": "g1_r2b_native",
+        "role": "r2b_native_geometry_reference"
+      },
+      {
+        "name": "g6_robust_linear",
+        "role": "stage1_geometry_gate_winner",
+        "decoder": {
+          "mode": "robust_linear",
+          "mad_threshold": 3.5,
+          "minimum_inliers": 5,
+          "trend_order": 1
+        },
+        "stage1_recovered_geometry": {
+          "mean_tight_box_iou": 0.036063,
+          "median_center_error_fraction": 4.113390,
+          "expanded_coverage_mean": 0.336288,
+          "prompt_success_rate": 0.04
+        }
+      }
+    ]
+  },
+  "stage2_policy": {
+    "split": "validation",
+    "negative_aware_medsam": true,
+    "expansion_scale": 1.2,
+    "target_labels": [1],
+    "ranking_rule": [
+      "case_volume_dice_mean",
+      "all_slice_dice_mean",
+      "negative_slice_specificity"
+    ],
+    "test_access_allowed": false,
+    "secondary_test_access_allowed": false,
+    "candidate_changes_after_medsam": false,
+    "post_stage2_parameter_tuning": false
+  }
+}

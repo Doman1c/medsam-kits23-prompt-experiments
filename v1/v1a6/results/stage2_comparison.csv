@@ -1,0 +1,4 @@
+candidate,all_slice_dice_mean,positive_slice_dice_mean,positive_slice_detection_recall,negative_slice_specificity,case_volume_dice_mean,total_tp_pixels,total_fp_pixels,total_fn_pixels
+g0_frozen_b1,0.835611,0.810180,0.933812,0.848954,0.854752,5643121,900945,504767
+g1_r2b_native,0.835791,0.810703,0.951356,0.848954,0.853935,5643771,920319,504117
+g6_robust_linear,0.835782,0.810677,0.953748,0.848954,0.853540,5643729,929454,504159

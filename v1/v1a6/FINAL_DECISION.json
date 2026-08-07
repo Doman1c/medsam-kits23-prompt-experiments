@@ -1,0 +1,65 @@
+{
+  "experiment": "V1a.6",
+  "status": "validation_complete_no_new_system_winner",
+  "test_set_used": false,
+  "secondary_test_used": false,
+  "stage2_review_bundle_sha256": "bbd6b8e7ff3ef76514ed0cf160a306e4a7e381db42dbdb7f4917d42b89498c58",
+  "predeclared_ranking_rule": [
+    "case_volume_dice_mean",
+    "all_slice_dice_mean",
+    "negative_slice_specificity"
+  ],
+  "ranked_candidates": [
+    "g0_frozen_b1",
+    "g1_r2b_native",
+    "g6_robust_linear"
+  ],
+  "winner": {
+    "name": "g0_frozen_b1",
+    "role": "frozen_v1a3b_complete_system_reference",
+    "all_slice_dice_mean": 0.835611,
+    "positive_slice_dice_mean": 0.810180,
+    "positive_slice_detection_recall": 0.933812,
+    "negative_slice_specificity": 0.848954,
+    "case_volume_dice_mean": 0.854752
+  },
+  "g1_r2b_native": {
+    "all_slice_dice_mean": 0.835791,
+    "positive_slice_dice_mean": 0.810703,
+    "positive_slice_detection_recall": 0.951356,
+    "negative_slice_specificity": 0.848954,
+    "case_volume_dice_mean": 0.853935,
+    "recovered_slice_dice_mean": 0.026199407755474087,
+    "recovered_tp_pixels": 650,
+    "recovered_fp_pixels": 19374
+  },
+  "g6_robust_linear": {
+    "all_slice_dice_mean": 0.835782,
+    "positive_slice_dice_mean": 0.810677,
+    "positive_slice_detection_recall": 0.953748,
+    "negative_slice_specificity": 0.848954,
+    "case_volume_dice_mean": 0.853540,
+    "recovered_slice_dice_mean": 0.02492059009540826,
+    "recovered_tp_pixels": 608,
+    "recovered_fp_pixels": 28509
+  },
+  "paired_g6_minus_g1_on_25_recovered_slices": {
+    "improved_slices": 6,
+    "worsened_slices": 6,
+    "unchanged_slices": 13,
+    "mean_dice_delta": -0.0012788176600658238,
+    "median_dice_delta": 0.0,
+    "tp_pixel_delta": -42,
+    "fp_pixel_delta": 9135,
+    "fn_pixel_delta": 42
+  },
+  "decision": {
+    "g6_replaces_g1": false,
+    "v1a6_replaces_frozen_b1": false,
+    "run_v1a6_secondary_test": false,
+    "allow_post_stage2_parameter_tuning": false,
+    "continue_v1a7_style_geometry_patch_series": false,
+    "freeze_image_only_mainline": true
+  },
+  "interpretation": "G6 passed the Stage-1 prompt-geometry gate but failed to improve downstream frozen-MedSAM performance. On the recovered satellite it slightly increases detection recall but produces more false-positive pixels and a lower recovered-slice mean Dice than native R2b geometry. Frozen V1a.3-B B1 therefore remains the complete-system validation winner. V1a.6 closes the image-only patching sequence rather than motivating another post-hoc geometry variant."
+}

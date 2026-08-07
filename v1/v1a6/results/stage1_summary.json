@@ -1,0 +1,51 @@
+{
+  "experiment": "V1a.6",
+  "stage": "stage1_validation_satellite_local_geometry",
+  "test_set_used": false,
+  "medsam_used": false,
+  "bundle_sha256": "30d2a54a05169d404f6436e7706d9dba5eb80c59c86ddeaffaeaa18480a5bc67",
+  "bundle_integrity": {
+    "listed_files": 19,
+    "size_and_sha256_verified": true,
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "recovered_subset": {
+    "side_slices": 25,
+    "gt_positive_side_slices": 25,
+    "case_id": "case_00067",
+    "side": "left",
+    "slice_range": [19, 43]
+  },
+  "reference_g1": {
+    "recovered_mean_tight_box_iou": 0.032847050424552715,
+    "recovered_median_center_error_fraction": 5.25,
+    "recovered_expanded_coverage_mean": 0.19565840938722295,
+    "recovered_prompt_success_rate": 0.0
+  },
+  "candidates": {
+    "g4_satellite_median": {
+      "recovered_mean_tight_box_iou": 0.002841,
+      "recovered_median_center_error_fraction": 3.625,
+      "recovered_expanded_coverage_mean": 0.058686,
+      "recovered_prompt_success_rate": 0.0,
+      "advance_to_medsam": false
+    },
+    "g5_rolling_median": {
+      "recovered_mean_tight_box_iou": 0.029927,
+      "recovered_median_center_error_fraction": 4.928571,
+      "recovered_expanded_coverage_mean": 0.199096,
+      "recovered_prompt_success_rate": 0.0,
+      "advance_to_medsam": false
+    },
+    "g6_robust_linear": {
+      "recovered_mean_tight_box_iou": 0.036063,
+      "recovered_median_center_error_fraction": 4.113390,
+      "recovered_expanded_coverage_mean": 0.336288,
+      "recovered_prompt_success_rate": 0.04,
+      "advance_to_medsam": true
+    }
+  },
+  "decision": "G6 is the only Stage-1 method satisfying the predeclared recovered-IoU and median-center-error gate. Freeze G0/G1/G6 before one negative-aware validation MedSAM comparison."
+}

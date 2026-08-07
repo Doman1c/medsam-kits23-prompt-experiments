@@ -1,0 +1,55 @@
+{
+  "experiment": "V1a.6",
+  "status": "validation_only_satellite_local_geometry_development",
+  "base": {
+    "v1a5_merge_commit": "af2b92b96c0fecaecbfa21038b9d3aae3de27378",
+    "upstream_checkpoint": "V1a.3-A epoch 18",
+    "weights": "ema",
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "expansion_scale": 1.2,
+    "target_labels": [1]
+  },
+  "presence": {
+    "source": "V1a.4 R2b remote satellite",
+    "satellite_max_distance": 64,
+    "satellite_evidence_ratio": 0.1,
+    "satellite_min_length": 1,
+    "max_satellites": 1,
+    "presence_changes_allowed": false
+  },
+  "stage1_candidates": {
+    "g1_r2b_native": {
+      "role": "reference"
+    },
+    "g4_satellite_median": {
+      "mode": "satellite_median"
+    },
+    "g5_rolling_median": {
+      "mode": "rolling_median",
+      "window": 5
+    },
+    "g6_robust_linear": {
+      "mode": "robust_linear",
+      "mad_threshold": 3.5,
+      "minimum_inliers": 5,
+      "trend_order": 1
+    }
+  },
+  "stage1_gate": {
+    "reference": "g1_r2b_native",
+    "requires_recovered_mean_iou_improvement": true,
+    "requires_recovered_median_center_error_improvement": true,
+    "medsam_allowed_before_gate": false
+  },
+  "development_policy": {
+    "split": "validation",
+    "expected_cases": 20,
+    "expected_rows": 3644,
+    "retraining": false,
+    "presence_changes": false,
+    "non_recovered_geometry_changes": false,
+    "test_access": false,
+    "secondary_test_access": false,
+    "post_stage1_parameter_sweep": false
+  }
+}
