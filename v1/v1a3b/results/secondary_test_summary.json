@@ -1,0 +1,45 @@
+{
+  "experiment": "V1a.3-B",
+  "status": "locked_secondary_test_complete",
+  "test_interpretation": "Secondary locked evaluation on the same 27-case test split previously exposed during V1a.3-A; not a pristine first-look test.",
+  "selection_performed_on_test": false,
+  "frozen_winner": {
+    "name": "b1_low_fpr_frozen",
+    "decoder": {
+      "mode": "single_span",
+      "left_threshold": 0.0035,
+      "right_threshold": 0.04,
+      "baseline_max_gap": 4,
+      "boundary_pad": 1,
+      "expansion_scale": 1.2
+    }
+  },
+  "b0": {
+    "all_slice_dice_mean": 0.747545878458055,
+    "positive_slice_dice_mean": 0.7233743026900277,
+    "positive_slice_case_mean_dice": 0.7626535404177944,
+    "positive_slice_detection_recall": 0.971506105834464,
+    "negative_slice_specificity": 0.7602568676418123,
+    "negative_false_positive_mask_rate": 0.2397431323581876,
+    "case_volume_dice_mean": 0.7995902880973497
+  },
+  "b1": {
+    "all_slice_dice_mean": 0.8008625888769413,
+    "positive_slice_dice_mean": 0.6826928715242044,
+    "positive_slice_case_mean_dice": 0.7587242509977544,
+    "positive_slice_detection_recall": 0.8636363636363636,
+    "negative_slice_specificity": 0.8630039243667499,
+    "negative_false_positive_mask_rate": 0.1369960756332501,
+    "case_volume_dice_mean": 0.8016223720426268
+  },
+  "b1_minus_b0": {
+    "all_slice_dice_mean": 0.053316710418886304,
+    "positive_slice_dice_mean": -0.040681431165823234,
+    "positive_slice_case_mean_dice": -0.003929289420040005,
+    "positive_slice_detection_recall": -0.1078697421981003,
+    "negative_slice_specificity": 0.10274705672493756,
+    "negative_false_positive_mask_rate": -0.1027470567249375,
+    "case_volume_dice_mean": 0.0020320839452770967
+  },
+  "post_test_tuning_allowed": false
+}
