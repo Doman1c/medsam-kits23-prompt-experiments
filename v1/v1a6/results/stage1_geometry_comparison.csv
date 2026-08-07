@@ -1,0 +1,5 @@
+candidate,recovered_mean_tight_box_iou,recovered_median_center_error_fraction,recovered_expanded_coverage_mean,recovered_prompt_success_rate,advance_to_medsam
+g1_r2b_native,0.0328470504,5.250000,0.1956584094,0.000000,reference
+g4_satellite_median,0.002841,3.625000,0.058686,0.000000,false
+g5_rolling_median,0.029927,4.928571,0.199096,0.000000,false
+g6_robust_linear,0.036063,4.113390,0.336288,0.040000,true
