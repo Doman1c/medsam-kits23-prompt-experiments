@@ -1,146 +1,120 @@
-# V1a.4 design — recover recall without giving back V1a.3-B FP suppression
-
-## Motivation
-
-V1a.3-B established that a case-level single-span prior removes detached z-axis
-false-positive islands. On validation it improved all-slice robustness and
-negative specificity, and the locked secondary evaluation reproduced the same
-false-positive suppression. However, the hard single-span prior also pruned true
-positive kidney slices on the already-exposed secondary test.
-
-V1a.4 asks a narrower controlled question:
-
-> Can we recover slices near the frozen dominant kidney span while preserving a
-> material fraction of V1a.3-B's false-positive suppression?
-
-The V1a.3-B secondary test motivates this research question, but V1a.4 parameter
-selection is validation-only. The secondary-test results must not be used to
-choose V1a.4 thresholds, distances, gaps, or decoder family.
+# V1a.4 design — recall recovery after hard single-span pruning
 
 ## Frozen upstream
 
-No retraining is allowed in V1a.4 Stage 1.
-
-- V1a.3-A epoch 18 EMA checkpoint;
-- checkpoint SHA-256 `f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2`;
-- frozen V1a.3-B B1 seed:
-  - single span;
-  - left threshold `0.0035`;
-  - right threshold `0.0400`;
-  - baseline max gap `4`;
-  - boundary pad `1`;
-- geometry unchanged;
-- MedSAM unchanged;
-- expansion `1.20` unchanged;
-- target label `1` (kidney).
-
-## Stage 0 — recovery audit
-
-Before comparing new decoders, quantify which GT-positive slices are absent from
-the frozen B1 seed on the 20-case validation split.
-
-For every missed positive side-slice, record:
-
-- before / after / inside / no-seed relation to the frozen dominant span;
-- distance to the nearest frozen seed slice;
-- side;
-- smoothed presence probability.
-
-The audit reports what fraction of misses lie within 1, 2, 4, 6, 8, 12, and 16
-slices of the frozen span. This distinguishes boundary under-coverage from a
-truly disconnected or completely missed side.
-
-## Stage 1 decoder families
-
-### R0 — frozen V1a.3-B B1
-
-Reference only. No change.
-
-### R1 — hysteresis boundary recovery
-
-Use the frozen B1 span as the high-confidence seed. Expand each boundary only
-outward, at a lower recovery threshold, up to a bounded maximum extension.
-Optionally bridge a very short below-threshold run if stronger evidence resumes
-immediately after it.
-
-Properties:
-
-- cannot create a disconnected new island;
-- does not change center/size geometry;
-- uses only model probabilities and the frozen predicted span;
-- directly targets boundary false negatives.
-
-Validation search dimensions:
+V1a.4 starts from the merged V1a.3-B experiment and does not change the prompt
+network, box geometry, MedSAM, target label, or expansion.
 
 ```text
-left recovery threshold  = 0.0005 .. 0.003
-right recovery threshold = 0.0025 .. 0.03
-max extension             = 2,4,6,8,12,16 slices
-bridge gap                = 0,1,2 slices
+V1a.3-B merge     = 36c260096f733fc54e4db0819cc04527d021eff6
+checkpoint        = V1a.3-A epoch 18 EMA
+checkpoint SHA256 = f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2
+
+frozen B1 seed:
+left threshold      = 0.0035
+right threshold     = 0.0400
+baseline max gap    = 4
+boundary pad        = 1
+expansion scale     = 1.20
 ```
 
-### R2 — limited nearby satellite retention
+The V1a.3-B secondary test is already exposed. It may motivate the V1a.4
+question but cannot select V1a.4 parameters.
 
-Reconstruct the frozen-threshold B0 candidate segments, keep the same dominant
-segment as V1a.3-B, and allow at most one additional segment when it is:
+## Primary question
 
-- close to the dominant segment;
-- long enough;
-- supported by a minimum fraction of the dominant segment's threshold-relative
-  evidence.
+Can a small amount of case-level presence recovery regain slices pruned by the
+hard single-span prior while preserving most of its false-positive suppression?
 
-The satellite is proposed only from the frozen threshold/gap mask. Distant
-activation islands remain rejected.
+## Locked validation gate
 
-Validation search dimensions:
+All V1a.4 decoder selection uses only the 20-case / 3,644-row validation split.
+The gate is fixed across development stages:
 
 ```text
-satellite max distance   = 2,4,6,8,12,16 slices
-satellite evidence ratio = 0.05,0.10,0.20,0.35,0.50
-satellite min length     = 1,2,3 slices
-max satellites           = 1 (fixed)
+overall recall >= 0.96
+left recall    >= 0.94
+right recall   >= 0.97
+FPR             <= 0.15
 ```
 
-A combined R1+R2 decoder is intentionally excluded from Stage 1. It is considered
-only if the audit and separate R1/R2 results show complementary error recovery.
-This keeps the first experiment interpretable and limits validation overfitting.
+MedSAM is not run until at least one decoder passes this presence-level gate.
 
-## Locked Stage-1 recovery gate
+## Stage 1
 
-The gate is defined from validation baselines, not from the secondary test:
+Stage 1 compares two local mechanisms against frozen B1:
+
+- R1: bounded lower-threshold hysteresis extension from the dominant span;
+- R2: retain at most one nearby threshold-derived satellite segment.
+
+### Stage-1 result
+
+Frozen B1 has recall `0.9502` and FPR `0.1193`. The audit found 107 FN slices:
+83 before the seed, 24 after; 85 left and 22 right. Only 47/107 are within 16
+slices of the seed.
+
+A single case-side (`case_00067`, left) contributes 76 FN slices extending up to
+76 slices before the selected dominant span. This is a split-span / dominant
+segment selection failure rather than only a local boundary miss.
+
+The best local hysteresis point under FPR 0.15 is frozen for subsequent use:
 
 ```text
-overall side-slice recall >= 0.96
-left recall               >= 0.94
-right recall              >= 0.97
-side-slice FPR             <= 0.15
+left recovery threshold  = 0.0005
+right recovery threshold = 0.0025
+max extension            = 6
+bridge gap               = 2
+
+overall recall = 0.9567
+left recall    = 0.9318
+right recall   = 0.9867
+FPR            = 0.1341
 ```
 
-Rationale: approximately recover the locked B0 validation recall while retaining
-a material fraction of the V1a.3-B false-positive reduction.
+It helps but does not meet the gate. The Stage-1 satellite search was limited to
+16 slices and produced no recall improvement. Stage 1 therefore rejects a
+local-only repair as sufficient.
 
-For each family, Stage 1 materializes up to three diverse feasible operating
-points:
+## Stage 1b
 
-1. lowest FPR;
-2. highest recall;
-3. lowest onset/offset boundary error.
+Stage 1b changes only the satellite support range. It does not re-sweep the local
+hysteresis parameters.
 
-Prompt geometry is then checked at expansion `1.20`. No MedSAM is run in Stage 1.
+Two families are predeclared:
 
-## Decision after Stage 1
+### R2b remote satellite
 
-- If neither R1 nor R2 passes the recovery gate, stop and inspect the recovery
-  audit before adding complexity.
-- If only one family passes, advance that family to negative-aware MedSAM.
-- If both pass, compare a small predeclared shortlist through MedSAM.
-- Only if R1 and R2 recover complementary errors should a hybrid decoder be
-  introduced as a separate subsequent stage.
+Keep frozen B1 and allow at most one additional threshold-derived segment when:
 
-## Test policy
+- it is within a bounded but larger z-distance (`20,24,32,48,64,96` slices);
+- its threshold-relative evidence is a sufficient fraction of the dominant span;
+- it meets a minimum segment length.
 
-No V1a.4 test or secondary-test evaluation is allowed during development.
-Because the existing 27-case split has already been exposed in earlier versions,
-a later run on it can only be called a locked secondary evaluation. A
-publication-quality final estimate requires a new untouched holdout from
-previously unused KiTS23 cases.
+The gap between the dominant span and satellite is not filled.
+
+### R3 hybrid
+
+Union the fixed Stage-1 R1 output with R2b. This is justified because Stage 1
+showed that local hysteresis recovers one error class while the audit exposed a
+separate long-range split-span class.
+
+Satellite sweep dimensions:
+
+```text
+distance        = 20,24,32,48,64,96
+evidence ratio  = 0.05,0.10,0.20,0.35,0.50,0.75
+minimum length  = 1,2,3,5,8
+max satellites  = 1
+```
+
+The validation gate remains unchanged. No MedSAM and no test access occur in
+Stage 1b.
+
+## Stopping rule
+
+- If neither R2b nor R3 passes the locked gate, stop V1a.4 presence recovery;
+  do not keep widening the decoder around validation failures.
+- If one or more configurations pass, retain a small diverse validation
+  shortlist and then run one negative-aware MedSAM comparison.
+- Any later locked evaluation must use one configuration selected entirely on
+  validation and must not trigger post-evaluation parameter changes.
