@@ -1,0 +1,26 @@
+{
+  "experiment": "V1a.3-B",
+  "status": "validation_only_development_lock",
+  "upstream": {
+    "v1a3a_merge_commit": "f91422d8b4b44b546a42c649cde92a49d83f07f7",
+    "checkpoint_epoch": 18,
+    "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2",
+    "weights": "ema",
+    "input_mode": "2.5d",
+    "geometry": "V1a.2-B / V1a.3-A unchanged"
+  },
+  "locked_b0_presence": {
+    "variant": "smooth",
+    "max_gap": 2,
+    "left_threshold": 0.005,
+    "right_threshold": 0.005,
+    "expansion_scale": 1.2
+  },
+  "development_split": {
+    "name": "val",
+    "cases": 20,
+    "rows": 3644
+  },
+  "test_split_access_for_v1a3b_selection": false,
+  "controlled_change": "case-level z-axis presence decoder only"
+}
