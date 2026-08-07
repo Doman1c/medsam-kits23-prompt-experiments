@@ -1,0 +1,11 @@
+stage,bottleneck_hypothesis,controlled_intervention,key_result,next_bottleneck
+V0,prompt formulation uncertain,compare box/point/mask combinations,box and box_mask are strongest frozen-MedSAM prompts,automatic box generation
+V0.5,box tolerance unknown,controlled expansion/center/corner perturbation,moderate box error tolerated but large error and tiny edge slices are fragile,learned geometry accuracy
+V1a.1,learned bilateral box quality,2.5D dual-kidney presence plus center/size prediction,automatic positive-slice Dice 0.7628 vs oracle-scaled 0.8713; geometry dominates oracle gap,center-size supervision mismatch
+V1a.2-A,size trained at GT center but read at predicted center,add predicted-center size supervision,negative-aware case-volume Dice reaches 0.855560,negative-slice presence false positives
+V1a.2-B,joint center-size decoded-box error,add decoded-corner supervision,strongest fixed-presence geometry; prompt-best checkpoint fails on negatives,presence-aware model selection
+V1a.3-A,insufficient hard-negative exposure,targeted negative sampling,validation negative suppression improves but frozen test does not beat V1a.1 positive Dice,case-level anatomical continuity
+V1a.3-B,detached z-axis false-positive islands,single-span case-level decoder,all-slice Dice 0.835611 and specificity 0.848954; final robust operating point,hard span over-prunes some true positives
+V1a.4,over-pruned remote positive slices,remote-satellite presence recovery,presence recall improves without FPR increase but case-volume Dice does not,recovered-slice geometry
+V1a.5,recovered geometry may be borrowable from reliable span,nearest-anchor and linear propagation,distant anchors 49-73 slices away collapse overlap,satellite-local geometry
+V1a.6,native satellite geometry is noisy,satellite median/rolling/robust-linear consensus,G6 improves prompt metrics but worsens recovered MedSAM Dice and FP pixels,prompt metric-to-MedSAM mismatch; stop patch series
