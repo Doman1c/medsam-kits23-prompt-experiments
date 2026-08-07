@@ -1,0 +1,67 @@
+{
+  "experiment": "V1a.4",
+  "stage": "stage1_validation_presence_recovery",
+  "test_set_used": false,
+  "bundle_integrity": {
+    "listed_files": 11,
+    "size_and_sha256_verified": true,
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "frozen_b1": {
+    "positive_recall": 0.9502325581395349,
+    "left_positive_recall": 0.927536231884058,
+    "right_positive_recall": 0.977482088024565,
+    "false_positive_rate": 0.11930712339431686,
+    "specificity": 0.8806928766056832,
+    "false_negative_slices": 107
+  },
+  "false_negative_audit": {
+    "before_seed": 83,
+    "after_seed": 24,
+    "left": 85,
+    "right": 22,
+    "case_sides_with_any_false_negative": 11,
+    "case_sides_with_no_seed_false_negative": 0,
+    "within_16_slices": 47,
+    "within_16_fraction": 0.4392523364485981,
+    "dominant_failure_case_side": {
+      "case_id": "case_00067",
+      "side": "left",
+      "false_negative_slices": 76,
+      "fraction_of_all_false_negative_slices": 0.7102803738317757,
+      "relation": "before_seed",
+      "maximum_distance_to_seed": 76
+    }
+  },
+  "sweep": {
+    "num_configs": 738,
+    "num_feasible": 0,
+    "feasible_hysteresis": 0,
+    "feasible_satellite": 0,
+    "best_hysteresis_under_fpr_0_15": {
+      "left_recovery_threshold": 0.0005,
+      "right_recovery_threshold": 0.0025,
+      "max_extension": 6,
+      "bridge_gap": 2,
+      "positive_recall": 0.9567441860465116,
+      "left_positive_recall": 0.9317988064791134,
+      "right_positive_recall": 0.9866939611054247,
+      "false_positive_rate": 0.13409887115609265,
+      "specificity": 0.8659011288439074
+    },
+    "satellite_result": "The Stage-1 satellite grid (maximum distance 16 slices) did not improve positive recall over frozen B1."
+  },
+  "interpretation": {
+    "local_boundary_recovery": "Useful but insufficient. It recovers local boundary misses, especially on the right, but cannot satisfy the locked overall/left recall gate.",
+    "local_satellite_recovery": "Search range was too local for the dominant failure topology; the largest error is a long-range left-side miss far before the frozen seed.",
+    "stage1_conclusion": "Stage 1 rejects local-only recovery as sufficient, but supports a second validation-only stage testing one strongly supported remote satellite segment, with an optional hybrid using the fixed best local hysteresis rule."
+  },
+  "locked_gate_unchanged": {
+    "minimum_overall_recall": 0.96,
+    "minimum_left_recall": 0.94,
+    "minimum_right_recall": 0.97,
+    "maximum_false_positive_rate": 0.15
+  }
+}
