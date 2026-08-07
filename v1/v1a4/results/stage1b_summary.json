@@ -1,0 +1,82 @@
+{
+  "experiment": "V1a.4",
+  "stage": "stage1b_validation_remote_satellite",
+  "test_set_used": false,
+  "bundle_integrity": {
+    "listed_files": 37,
+    "size_and_sha256_verified": true,
+    "contains_weights": false,
+    "contains_npz": false,
+    "contains_large_prediction_tables": false
+  },
+  "sweep": {
+    "num_configs": 360,
+    "num_feasible": 40,
+    "feasible_remote_satellite": 20,
+    "feasible_hybrid": 20
+  },
+  "references": {
+    "frozen_b1": {
+      "positive_recall": 0.9502325581395349,
+      "left_positive_recall": 0.927536231884058,
+      "right_positive_recall": 0.977482088024565,
+      "false_positive_rate": 0.11930712339431686,
+      "prompt_success_rate": 0.8232558139534883,
+      "tight_box_iou": 0.760548,
+      "continuous_score": 0.778657
+    },
+    "fixed_local_hysteresis": {
+      "positive_recall": 0.9567441860465117,
+      "left_positive_recall": 0.9317988064791134,
+      "right_positive_recall": 0.9866939611054247,
+      "false_positive_rate": 0.13409887115609187,
+      "prompt_success_rate": 0.8274418604651163,
+      "tight_box_iou": 0.764137,
+      "continuous_score": 0.781676
+    }
+  },
+  "stage2_predeclared_finalists": {
+    "remote_satellite": {
+      "source_candidate": "r2b_remote_satellite_1",
+      "satellite_max_distance": 64,
+      "satellite_evidence_ratio": 0.1,
+      "satellite_min_length": 1,
+      "max_satellites": 1,
+      "positive_recall": 0.9618604651162791,
+      "left_positive_recall": 0.948849104859335,
+      "right_positive_recall": 0.977482088024565,
+      "false_positive_rate": 0.11930712339431686,
+      "specificity": 0.8806928766056832,
+      "prompt_success_rate": 0.8232558139534883,
+      "tight_box_iou": 0.760929,
+      "continuous_score": 0.781919
+    },
+    "hybrid": {
+      "source_candidate": "r3_hybrid_1",
+      "satellite_max_distance": 64,
+      "satellite_evidence_ratio": 0.1,
+      "satellite_min_length": 1,
+      "max_satellites": 1,
+      "fixed_local_hysteresis": {
+        "left_recovery_threshold": 0.0005,
+        "right_recovery_threshold": 0.0025,
+        "max_extension": 6,
+        "bridge_gap": 2
+      },
+      "positive_recall": 0.9683720930232558,
+      "left_positive_recall": 0.9531116794543905,
+      "right_positive_recall": 0.9866939611054247,
+      "false_positive_rate": 0.13409887115609187,
+      "specificity": 0.8659011288439081,
+      "prompt_success_rate": 0.8274418604651163,
+      "tight_box_iou": 0.764519,
+      "continuous_score": 0.784937
+    }
+  },
+  "interpretation": {
+    "remote_satellite": "Passes the unchanged recovery gate while preserving the frozen-B1 FPR exactly on validation.",
+    "hybrid": "Passes the gate with higher recall and prompt-level continuous score, at the FPR of the fixed local-hysteresis reference.",
+    "distance_result": "No recall change occurs through maximum distance 48; the recovery appears at 64 slices, matching the Stage-1 long-range split-span audit.",
+    "next_step": "Run one negative-aware frozen-MedSAM validation comparison on four predeclared candidates: frozen B1, fixed local hysteresis, remote satellite rank 1, and hybrid rank 1."
+  }
+}
