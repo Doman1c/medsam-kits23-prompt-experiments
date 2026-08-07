@@ -21,9 +21,11 @@ The project asks two related questions:
 2. Which errors dominate the automatic system: presence decisions, box center,
    box size, or center-size interaction?
 
-Development follows controlled validation-only ablations. The frozen test split
-is not used to select checkpoints, thresholds, smoothing, max-gap, expansion,
-samplers, or loss variants.
+Development follows controlled validation-only ablations. The original test
+split is not used to select new V1a.4 decoder parameters. Because that split was
+already exposed in earlier frozen evaluations, any later use is explicitly
+reported as a locked secondary evaluation rather than a pristine first-look
+estimate.
 
 ## Experiment versions
 
@@ -35,8 +37,9 @@ samplers, or loss variants.
 | [V1a.2-A](v1/v1a2/) | Does predicted-center size supervision repair train-inference mismatch? | Validation complete |
 | [V1a.2-B](v1/v1a2b/) | Does decoded-corner supervision reduce joint center-size error? | Validation complete |
 | [V1a.2 follow-up](v1/v1a2b/followup_validation/) | Which model survives fully negative slices and checkpoint-Pareto analysis? | Complete |
-| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | **Frozen test complete** |
-| [V1a.3-B](v1/v1a3b/) | Can explicit case-level z-span decoding suppress residual presence islands without retraining? | **Validation in progress** |
+| [V1a.3-A](v1/v1a3/) | Can targeted negative sampling repair presence without changing geometry or loss? | Frozen test complete |
+| [V1a.3-B](v1/v1a3b/) | Can explicit case-level z-span decoding suppress residual presence islands without retraining? | **Complete** |
+| [V1a.4](v1/v1a4/) | Can local recovery restore recall without giving back V1a.3-B false-positive suppression? | **Validation in progress** |
 
 ## V1a.2 findings
 
@@ -69,90 +72,103 @@ All models were compared with ground-truth presence and expansion fixed at
 ## Completed V1a.3-A study
 
 V1a.3-A retained the V1a.2-B architecture and optimized loss and changed only
-the training sampler. It used mined hard negatives, boundary negatives, near
-negatives, limited far negatives, and unilateral-positive oversampling.
+the training sampler. Validation selected epoch 18 EMA with smooth presence,
+`max_gap=2`, left/right threshold `0.005/0.005`, and expansion `1.20`.
 
-Validation selected epoch 18 with:
-
-```text
-EMA weights
-smooth presence
-max_gap = 2
-left threshold = 0.005
-right threshold = 0.005
-expansion scale = 1.20
-```
-
-### Validation winner
-
-| Metric | V1a.3-A epoch 18 |
-|---|---:|
-| Positive-slice Dice | 0.8067 |
-| All-slice Dice | 0.7760 |
-| Case-volume Dice | 0.8479 |
-| Negative specificity | 0.7598 |
+| Metric | Validation | Frozen test |
+|---|---:|---:|
+| Positive-slice Dice | 0.8067 | 0.7239 |
+| All-slice Dice | 0.7760 | 0.7475 |
+| Case-volume Dice | 0.8479 | 0.7996 |
+| Negative specificity | 0.7598 | 0.7603 |
 
 The fixed-presence M0 geometry score was `0.8416`, showing that targeted
 sampling did not collapse V1a.2-B box geometry.
 
-### Frozen test
+## Completed V1a.3-B study
 
-The V1a.3-A protocol was locked before first test access and was not tuned
-afterward.
-
-| Metric | V1a.3-A frozen test |
-|---|---:|
-| Test cases | 27 |
-| Total slices | 4,277 |
-| Prompt positive-side recall | 0.9398 |
-| Prompt side FPR | 0.2084 |
-| Positive-slice MedSAM Dice | 0.7239 |
-| Positive-slice case-mean Dice | 0.7627 |
-| All-slice Dice | 0.7475 |
-| Case-volume Dice | 0.7996 |
-| Negative specificity | 0.7603 |
-
-V1a.3-A improved the controlled validation picture for negative-slice
-suppression while preserving geometry, but its frozen-test positive-slice Dice
-did not exceed the V1a.1 frozen baseline (`0.7628`). It is therefore retained as
-a completed negative-sampling study rather than a new overall system winner.
-
-See [V1a.3-A protocol and results](v1/v1a3/) and the
-[compact result bundle](v1/v1a3/results/).
-
-## Current development: V1a.3-B
-
-V1a.3-B freezes the V1a.3-A epoch-18 EMA network and changes only the case-level
-presence decoder. The first controlled comparison is:
+V1a.3-B froze the V1a.3-A epoch-18 EMA network and changed only case-level
+presence decoding. Validation selected a simple dominant single-span decoder:
 
 ```text
-B0 locked V1a.3-A threshold + smoothing + gap fill
-B1 retain one dominant threshold-derived segment per kidney side
-B2 choose one optimal contiguous kidney span with bounded internal low-confidence gap
+left threshold      = 0.0035
+right threshold     = 0.0400
+baseline max gap    = 4
+boundary pad        = 1
+expansion            = 1.20
 ```
 
-The branch includes a fresh-Colab environment recovery script, a topology audit,
-a recall-constrained decoder sweep, prompt-level shortlist evaluation, and an
-optional negative-aware MedSAM stage. Development is restricted to the 20-case
-validation split; no new V1a.3-B test access is permitted before validation
-selection is complete.
+### Validation
 
-See [V1a.3-B design and runbook](v1/v1a3b/).
+| Metric | V1a.3-A / B0 | V1a.3-B / B1 |
+|---|---:|---:|
+| All-slice Dice | 0.7760 | **0.8356** |
+| Positive-slice Dice | 0.8067 | **0.8102** |
+| Negative specificity | 0.7598 | **0.8490** |
+| Case-volume Dice | 0.8479 | **0.8548** |
+
+### Locked secondary evaluation
+
+The original 27-case split had already been exposed before V1a.3-B, so these
+numbers are reported only as a locked secondary comparison.
+
+| Metric | B0 | Frozen B1 |
+|---|---:|---:|
+| All-slice Dice | 0.7475 | **0.8009** |
+| Positive-slice Dice | **0.7234** | 0.6827 |
+| Positive case-mean Dice | **0.7627** | 0.7587 |
+| Positive-slice detection recall | **0.9715** | 0.8636 |
+| Negative specificity | 0.7603 | **0.8630** |
+| Case-volume Dice | 0.7996 | **0.8016** |
+
+The z-span prior generalizes strongly for false-positive suppression and
+all-slice robustness, but the hard single-span constraint can over-prune true
+positive slices. V1a.3-B is therefore a conservative operating point rather
+than an unconditional replacement for B0.
+
+## Current development: V1a.4
+
+V1a.4 starts from the frozen V1a.3-B B1 configuration and asks whether recall
+can be recovered without returning to the detached false-positive islands that
+V1a.3-B removed.
+
+The first controlled validation-only comparison is:
+
+```text
+R0 frozen V1a.3-B B1
+R1 hysteresis boundary recovery
+R2 retain at most one nearby supported satellite segment
+```
+
+Stage 1 first audits where frozen-B1 false-negative slices lie relative to the
+predicted dominant span, then sweeps R1/R2 under a locked validation gate:
+
+```text
+overall recall >= 0.96
+left recall    >= 0.94
+right recall   >= 0.97
+FPR             <= 0.15
+```
+
+No MedSAM or test split is used in the first V1a.4 stage. See
+[V1a.4 design and runbook](v1/v1a4/).
 
 ## Repository structure
 
 ```text
 .
-├── v0/                         # frozen-MedSAM prompt baselines
-├── v0.5/                       # prompt robustness experiments
+├── v0/
+├── v0.5/
 └── v1/
-    ├── v1a1/                   # frozen baseline and test analysis
-    ├── v1a2/                   # predicted-center size supervision
-    ├── v1a2b/                  # decoded-box supervision and follow-up validation
-    ├── v1a3/                   # completed targeted-sampling presence repair
-    └── v1a3b/                  # case-level z-span presence decoding
+    ├── v1a1/
+    ├── v1a2/
+    ├── v1a2b/
+    ├── v1a3/
+    ├── v1a3b/
+    └── v1a4/
         ├── scripts/
-        ├── v1a3b/
+        ├── v1a4/
+        ├── BASELINE_LOCK.json
         ├── DESIGN.md
         └── README.md
 ```
@@ -160,27 +176,8 @@ See [V1a.3-B design and runbook](v1/v1a3b/).
 ## Reproducibility
 
 Git contains source code, locked configurations, compact comparison tables, and
-summary documents. The repository intentionally excludes:
-
-```text
-notebooks used only for Colab recovery
-model checkpoints (*.pt, *.pth)
-MedSAM weights
-raw KiTS23 volumes
-processed NPZ slices
-large per-slice prediction tables
-full threshold-sweep tables
-```
-
-Large immutable artifacts remain outside Git, while their locked SHA-256 values
-are recorded in the compact result files.
-
-## Frozen-test comparison
-
-| Model | Positive-slice Dice | Positive case-mean Dice |
-|---|---:|---:|
-| V1a.1 | **0.7628** | **0.7950** |
-| V1a.3-A epoch 18 | 0.7239 | 0.7627 |
-
-No V1a.3-A parameter was changed after the frozen test was opened. V1a.3-B is a
-new validation-only experiment and does not tune against that frozen result.
+summary documents. The repository intentionally excludes notebooks used only
+for Colab recovery, model checkpoints, MedSAM weights, raw KiTS23 volumes,
+processed NPZ slices, and large per-slice prediction tables. Large immutable
+artifacts remain outside Git, while locked hashes are recorded in compact
+configuration/result files.
