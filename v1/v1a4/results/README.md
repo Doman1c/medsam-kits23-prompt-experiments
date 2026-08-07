@@ -22,7 +22,28 @@ outcome. The key finding is that local-only recall recovery is insufficient:
 `stage1_best_points.csv` provides the frozen B1 and best local-hysteresis
 operating points in compact tabular form.
 
-Stage 1b therefore tests one strongly supported remote satellite segment, alone
-and in a controlled hybrid with the fixed Stage-1 local hysteresis rule. The
-original validation gate is unchanged, and no MedSAM/test access is allowed until
-that gate is satisfied.
+## Stage 1b
+
+`stage1b_summary.json` records the widened validation-only satellite study. The
+uploaded review bundle contained 37 listed files and all recorded size/SHA-256
+values matched.
+
+The 360-config sweep produced 40 feasible points under the unchanged gate:
+20 remote-satellite and 20 hybrid configurations.
+
+Pre-MedSAM finalists:
+
+| Candidate | Recall | Left recall | Right recall | FPR |
+|---|---:|---:|---:|---:|
+| Frozen B1 | 0.9502 | 0.9275 | 0.9775 | 0.1193 |
+| Fixed local hysteresis | 0.9567 | 0.9318 | 0.9867 | 0.1341 |
+| R2b remote satellite | 0.9619 | 0.9488 | 0.9775 | 0.1193 |
+| R3 hybrid | 0.9684 | 0.9531 | 0.9867 | 0.1341 |
+
+The recovery appears only when the satellite distance reaches 64 slices. R2b is
+notable because it crosses the locked recall gate without increasing frozen-B1
+FPR on validation. R3 provides the highest recall while retaining the fixed
+local-hysteresis FPR.
+
+`STAGE2_LOCK.json` freezes the exact four-candidate negative-aware MedSAM
+comparison before any Stage-2 MedSAM result is opened.
