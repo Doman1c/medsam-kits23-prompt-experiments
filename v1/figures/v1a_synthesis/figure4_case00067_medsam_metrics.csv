@@ -1,0 +1,5 @@
+case_id,slice_idx,split,b1_num_prompts,r2b_num_prompts,g6_num_prompts,b1_dice,r2b_dice,g6_dice,gt_pixels,r2b_pred_pixels,g6_pred_pixels
+case_00067,19,validation,0,1,1,0.0,0.3565954013715208,0.3580048270313757,491,1988,1995
+case_00067,21,validation,0,1,1,0.0,0.0763215514544885,0.0281419891269587,386,2811,2741
+case_00067,22,validation,0,1,1,0.0,0.0,0.0179282868525896,229,0,1779
+case_00067,24,validation,0,1,1,0.0,0.0,0.0,82,2456,1887

@@ -1,0 +1,69 @@
+{
+  "project": "MedSAM Automatic Prompt Generation on KiTS23",
+  "mainline": "V1a image-only automatic spatial prompting",
+  "status": "frozen_after_v1a6",
+  "freeze_commit": "dffb7c57c7e4ad7bdf9560e399ce29288a29f296",
+  "final_operating_point": {
+    "name": "v1a3b_frozen_b1",
+    "prompt_network": {
+      "source": "V1a.3-A",
+      "checkpoint_epoch": 18,
+      "weights": "ema",
+      "checkpoint_sha256": "f4ac0dab9b05a5b66382482b7053766cf4a14b376fd8ad4a52cab6b008a355e2"
+    },
+    "presence_decoder": {
+      "source": "V1a.3-B",
+      "mode": "single_span",
+      "left_threshold": 0.0035,
+      "right_threshold": 0.04,
+      "baseline_max_gap": 4,
+      "boundary_pad": 1
+    },
+    "medsam": {
+      "frozen": true,
+      "expansion_scale": 1.2,
+      "target_labels": [1]
+    },
+    "validation_metrics": {
+      "positive_slice_dice_mean": 0.81018,
+      "all_slice_dice_mean": 0.835611,
+      "case_volume_dice_mean": 0.854752,
+      "negative_slice_specificity": 0.848954,
+      "positive_slice_detection_recall": 0.933812
+    }
+  },
+  "historical_validation_reference": {
+    "best_case_volume_operating_point": "v1a2a_locked",
+    "case_volume_dice_mean": 0.85556,
+    "all_slice_dice_mean": 0.766569,
+    "negative_slice_specificity": 0.744351,
+    "note": "This is the highest historical validation case-volume mean, but it is not the final frozen robust operating point. V1a.3-B B1 is retained because it substantially improves all-slice Dice and negative specificity with nearly identical case-volume Dice."
+  },
+  "secondary_evaluation": {
+    "split": "same 27-case split previously exposed earlier in the project",
+    "pristine_project_level_holdout": false,
+    "selection_performed_on_secondary_split": false,
+    "all_slice_dice_mean": 0.8008625888769413,
+    "positive_slice_dice_mean": 0.6826928715242044,
+    "positive_slice_detection_recall": 0.8636363636363636,
+    "negative_slice_specificity": 0.8630039243667499,
+    "case_volume_dice_mean": 0.8016223720426268
+  },
+  "closed_followup_studies": {
+    "V1a.4": "Remote-satellite presence recovery increases recall without increasing presence FPR, but recovered-slice geometry prevents downstream case-volume improvement.",
+    "V1a.5": "Geometry copied or extrapolated from the distant dominant span fails because reliable anchors are 49-73 slices away.",
+    "V1a.6": "Satellite-local robust geometry improves prompt-level metrics but does not improve frozen-MedSAM segmentation."
+  },
+  "development_policy_after_freeze": {
+    "open_v1a7_style_patch_series": false,
+    "retune_thresholds": false,
+    "retune_expansion": false,
+    "retune_geometry_consensus": false,
+    "reuse_secondary_split_for_selection": false,
+    "next_work_must_be_new_research_question": true
+  },
+  "preferred_next_phase": [
+    "V1b language/semantic-guided target-to-spatial prompting",
+    "or a separately designed learned cross-slice geometry model with a new frozen protocol"
+  ]
+}
