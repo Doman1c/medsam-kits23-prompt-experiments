@@ -1,0 +1,53 @@
+{
+  "figure1a_box_perturbation": [
+    {"perturbation_percent": 5, "mean_dice_retention_center_shift": 0.998806, "mean_dice_retention_corner_jitter": 0.998298},
+    {"perturbation_percent": 10, "mean_dice_retention_center_shift": 0.98955, "mean_dice_retention_corner_jitter": 0.987636},
+    {"perturbation_percent": 20, "mean_dice_retention_center_shift": 0.890108, "mean_dice_retention_corner_jitter": 0.913183},
+    {"perturbation_percent": 30, "mean_dice_retention_center_shift": 0.753418, "mean_dice_retention_corner_jitter": 0.793975}
+  ],
+  "figure1b_box_scale": [
+    {"box_scale": 0.75, "mean_dice_retention": 0.766854},
+    {"box_scale": 0.9, "mean_dice_retention": 0.993021},
+    {"box_scale": 1.0, "mean_dice_retention": 1.0},
+    {"box_scale": 1.1, "mean_dice_retention": 0.999469},
+    {"box_scale": 1.25, "mean_dice_retention": 0.978994},
+    {"box_scale": 1.5, "mean_dice_retention": 0.82902},
+    {"box_scale": 2.0, "mean_dice_retention": 0.545709}
+  ],
+  "figure2a_oracle_gap": [
+    {"configuration": "Auto presence + auto box", "mean_dice": 0.7628},
+    {"configuration": "Oracle presence + auto box", "mean_dice": 0.7881},
+    {"configuration": "Oracle presence + oracle box", "mean_dice": 0.8713}
+  ],
+  "figure3_b0_b1": [
+    {"metric": "Positive Dice", "B0": 0.806677, "B1": 0.81018},
+    {"metric": "All-slice Dice", "B0": 0.775953, "B1": 0.835611},
+    {"metric": "Case-volume Dice", "B0": 0.847904, "B1": 0.854752},
+    {"metric": "Negative specificity", "B0": 0.759833, "B1": 0.848954}
+  ],
+  "figure4_case00067_medsam": [
+    {"case_id": "case_00067", "slice_idx": 19, "split": "validation", "b1_num_prompts": 0, "r2b_num_prompts": 1, "g6_num_prompts": 1, "b1_dice": 0.0, "r2b_dice": 0.3565954013715208, "g6_dice": 0.3580048270313757, "gt_pixels": 491, "r2b_pred_pixels": 1988, "g6_pred_pixels": 1995},
+    {"case_id": "case_00067", "slice_idx": 21, "split": "validation", "b1_num_prompts": 0, "r2b_num_prompts": 1, "g6_num_prompts": 1, "b1_dice": 0.0, "r2b_dice": 0.0763215514544885, "g6_dice": 0.0281419891269587, "gt_pixels": 386, "r2b_pred_pixels": 2811, "g6_pred_pixels": 2741},
+    {"case_id": "case_00067", "slice_idx": 22, "split": "validation", "b1_num_prompts": 0, "r2b_num_prompts": 1, "g6_num_prompts": 1, "b1_dice": 0.0, "r2b_dice": 0.0, "g6_dice": 0.0179282868525896, "gt_pixels": 229, "r2b_pred_pixels": 0, "g6_pred_pixels": 1779},
+    {"case_id": "case_00067", "slice_idx": 24, "split": "validation", "b1_num_prompts": 0, "r2b_num_prompts": 1, "g6_num_prompts": 1, "b1_dice": 0.0, "r2b_dice": 0.0, "g6_dice": 0.0, "gt_pixels": 82, "r2b_pred_pixels": 2456, "g6_pred_pixels": 1887}
+  ],
+  "figure5_geometry_medsam": [
+    {"level": "Prompt", "metric": "Mean tight-box IoU", "G1": 0.0328470504, "G6": 0.036063, "better_direction": "higher"},
+    {"level": "Prompt", "metric": "Median center error", "G1": 5.25, "G6": 4.11339, "better_direction": "lower"},
+    {"level": "Prompt", "metric": "Expanded coverage", "G1": 0.1956584094, "G6": 0.336288, "better_direction": "higher"},
+    {"level": "Prompt", "metric": "Prompt success rate", "G1": 0.0, "G6": 0.04, "better_direction": "higher"},
+    {"level": "MedSAM", "metric": "Recovered mean Dice", "G1": 0.0261994078, "G6": 0.0249205901, "better_direction": "higher"},
+    {"level": "MedSAM", "metric": "Recovered TP pixels", "G1": 650.0, "G6": 608.0, "better_direction": "higher"},
+    {"level": "MedSAM", "metric": "Recovered FP pixels", "G1": 19374.0, "G6": 28509.0, "better_direction": "lower"},
+    {"level": "MedSAM", "metric": "Case-volume Dice", "G1": 0.853935, "G6": 0.85354, "better_direction": "higher"}
+  ],
+  "notes": {
+    "main_ablation_source": "v1/results/v1a_mainline_ablation.csv",
+    "failure_progression_source": "v1/results/v1a_failure_progression.csv",
+    "figure4_split": "validation",
+    "figure4_test_access": false,
+    "figure4_frozen_medsam_reforward_only": true,
+    "new_training": false,
+    "selection_or_tuning_from_figures": false
+  }
+}
